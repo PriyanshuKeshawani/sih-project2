@@ -39,6 +39,10 @@ def scrub_secrets(message: str) -> str:
     return message
 
 
+from collections import deque
+
+_RECENT_LOGS = deque(maxlen=300)
+
 class ProductionLogger:
     """
     Structured, human-readable console observer for real-time mission execution.
@@ -58,7 +62,12 @@ class ProductionLogger:
         if correlation_id:
             tag_str += f"[{correlation_id}]"
         safe_msg = scrub_secrets(message)
-        print(f"{tag_str} {safe_msg}", flush=True)
+        formatted = f"{tag_str} {safe_msg}"
+        _RECENT_LOGS.append(formatted)
+        print(formatted, flush=True)
+
+    def get_recent_logs(self, limit: int = 100) -> List[str]:
+        return list(_RECENT_LOGS)[-limit:]
 
     def startup(self, msg: str):
         self.log_tag("STARTUP", msg)
@@ -154,6 +163,8 @@ class ProductionLogger:
             f"status={final_status}\n"
             "====================================================\n"
         )
+        for line in banner.strip().split("\n"):
+            _RECENT_LOGS.append(line)
         print(banner, flush=True)
 
 
@@ -163,6 +174,10 @@ logger = ProductionLogger()
 
 def get_console_logger() -> ProductionLogger:
     return logger
+
+
+def get_recent_logs(limit: int = 100) -> List[str]:
+    return logger.get_recent_logs(limit)
 
 
 def console_log(tag: str, message: str, scan_id: Optional[str] = None, correlation_id: Optional[str] = None, level: int = logging.INFO):

@@ -372,6 +372,22 @@
             </table>
           </div>
         </section>
+
+        <!-- Sub-panel 5: Real-Time Server Console & Log Terminal -->
+        <section class="hud-box console-box" aria-labelledby="console-heading">
+          <div class="hud-box-header">
+            <h3 id="console-heading">MISSION AUDIT LOG &amp; SERVER CONSOLE</h3>
+            <div class="console-actions">
+              <span id="log-status-dot" class="status-dot-green" title="Live Log Stream Active"></span>
+              <button id="btn-clear-logs" class="btn-clear-timeline" title="Clear console">CLEAR</button>
+            </div>
+          </div>
+          <div class="server-terminal" id="server-terminal">
+            <div id="terminal-output" class="terminal-output font-mono">
+              <div class="terminal-log-line tag-request">[STARTUP] SAMUDRA-AI cockpit connected to telemetry server.</div>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
   </div>

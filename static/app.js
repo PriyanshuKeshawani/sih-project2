@@ -28,6 +28,8 @@ document.addEventListener("DOMContentLoaded", () => {
   setupEventListeners();
   fetchSystem1Status();
   fetchSystem2Status();
+  pollServerLogs();
+  setInterval(pollServerLogs, 2500);
 });
 
 // =====================================================================
@@ -253,6 +255,78 @@ function setupEventListeners() {
       renderTimeline();
     });
   }
+
+  // Clear server console logs button
+  const btnClearLogs = document.getElementById("btn-clear-logs");
+  if (btnClearLogs) {
+    btnClearLogs.addEventListener("click", () => {
+      const terminalOut = document.getElementById("terminal-output");
+      if (terminalOut) terminalOut.innerHTML = "";
+    });
+  }
+}
+
+// =====================================================================
+// 3.5 Real-Time Server Console Streaming & Browser DevTools Mirroring
+// =====================================================================
+
+let seenLogLines = new Set();
+
+function handleServerLogs(logs) {
+  if (!logs || !Array.isArray(logs) || logs.length === 0) return;
+  const terminalOut = document.getElementById("terminal-output");
+
+  logs.forEach(line => {
+    // 1. Mirror directly to Browser DevTools Console with custom styles
+    let devToolsStyle = "color: #00e5ff; font-family: monospace; font-size: 11px;";
+    if (line.includes("[ERROR]")) devToolsStyle = "color: #ff3366; font-weight: bold;";
+    else if (line.includes("[SYSTEM1]")) devToolsStyle = "color: #00e676; font-weight: bold;";
+    else if (line.includes("[SYSTEM2]") || line.includes("[GROQ]") || line.includes("[GEMINI]")) devToolsStyle = "color: #ffb300; font-weight: bold;";
+    else if (line.includes("[PHYSICS]") || line.includes("[GEO]")) devToolsStyle = "color: #bb86fc;";
+    else if (line.includes("===") || line.includes("FINAL SCAN SUMMARY")) devToolsStyle = "color: #ffffff; background: #0b1a2d; font-weight: bold;";
+
+    console.log("%c[SERVER] " + line, devToolsStyle);
+
+    // 2. Append to UI Mission Terminal Drawer
+    if (terminalOut) {
+      const lineDiv = document.createElement("div");
+      let cls = "terminal-log-line";
+      if (line.includes("[REQUEST]")) cls += " tag-request";
+      else if (line.includes("[SYSTEM1]")) cls += " tag-system1";
+      else if (line.includes("[SYSTEM2]") || line.includes("[GROQ]") || line.includes("[GEMINI]")) cls += " tag-system2";
+      else if (line.includes("[INFERENCE]")) cls += " tag-inference";
+      else if (line.includes("[FINAL]")) cls += " tag-final";
+      else if (line.includes("[ERROR]")) cls += " tag-error";
+      else if (line.includes("===") || line.includes("FINAL SCAN SUMMARY")) cls += " tag-banner";
+
+      lineDiv.className = cls;
+      lineDiv.textContent = line;
+      terminalOut.appendChild(lineDiv);
+
+      const terminalBox = document.getElementById("server-terminal");
+      if (terminalBox) terminalBox.scrollTop = terminalBox.scrollHeight;
+    }
+  });
+}
+
+async function pollServerLogs() {
+  try {
+    const res = await fetch("/api/logs?limit=50");
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.logs && Array.isArray(data.logs)) {
+      const newLogs = data.logs.filter(l => !seenLogLines.has(l));
+      newLogs.forEach(l => seenLogLines.add(l));
+      if (seenLogLines.size > 500) {
+        seenLogLines = new Set(data.logs);
+      }
+      if (newLogs.length > 0) {
+        handleServerLogs(newLogs);
+      }
+    }
+  } catch (e) {
+    // quiet catch
+  }
 }
 
 // =====================================================================
@@ -299,6 +373,10 @@ async function triggerScan() {
 
     timer.textContent = `${duration} ms (ONLINE)`;
     timer.style.color = "var(--green-neon)";
+
+    if (data.logs) {
+      handleServerLogs(data.logs);
+    }
 
     renderResults(data);
   } catch (err) {

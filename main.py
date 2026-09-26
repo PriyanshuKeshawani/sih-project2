@@ -18,7 +18,7 @@ from engine.mission import MissionReportGenerator
 from engine.system2 import System2Queue, System2MissionContext
 from engine.temporal_tracking import TemporalPersistenceTracker, TrackingConfig
 from engine.config import get_current_config
-from engine.logger import console_log, get_console_logger
+from engine.logger import console_log, get_console_logger, get_recent_logs
 from engine.metadata import SurveyMetadata
 
 app = FastAPI(
@@ -289,7 +289,18 @@ async def scan_sonar(
             "message": "System 2 tactical analysis queued asynchronously"
         },
         "annotated_image": f"data:image/jpeg;base64,{annotated_base64}",
-        "raw_image": f"data:image/jpeg;base64,{raw_base64}"
+        "raw_image": f"data:image/jpeg;base64,{raw_base64}",
+        "logs": get_recent_logs(60)
+    })
+
+@app.get("/api/logs")
+async def get_server_logs(limit: int = 100):
+    """
+    Returns recent structured server logs for real-time website console streaming.
+    """
+    return JSONResponse({
+        "status": "success",
+        "logs": get_recent_logs(limit)
     })
 
 @app.post("/api/surveys/{survey_id}/observations")

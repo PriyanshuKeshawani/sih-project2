@@ -1241,3 +1241,52 @@ body {
     display: none; /* Hide depth/elevation on ultra-narrow phones */
   }
 }
+
+/* Server Console & Live Terminal Drawer */
+.console-box {
+  margin-top: 10px;
+  background: rgba(8, 14, 28, 0.95);
+  border: 1px solid rgba(0, 242, 254, 0.2);
+}
+.console-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.status-dot-green {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green-neon, #00e676);
+  box-shadow: 0 0 8px var(--green-neon, #00e676);
+}
+.server-terminal {
+  max-height: 220px;
+  min-height: 120px;
+  overflow-y: auto;
+  background: #030712;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  padding: 8px 10px;
+}
+.terminal-output {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+.terminal-log-line {
+  word-break: break-all;
+  white-space: pre-wrap;
+  color: #a0aec0;
+}
+.terminal-log-line.tag-request { color: #00f2fe; }
+.terminal-log-line.tag-system1 { color: #00e676; font-weight: 600; }
+.terminal-log-line.tag-system2 { color: #ffb300; font-weight: 600; }
+.terminal-log-line.tag-inference { color: #818cf8; }
+.terminal-log-line.tag-final { color: #38bdf8; font-weight: 700; }
+.terminal-log-line.tag-error { color: #f43f5e; font-weight: 700; }
+.terminal-log-line.tag-banner { color: #ffffff; background: rgba(0, 242, 254, 0.08); font-weight: bold; }
+
