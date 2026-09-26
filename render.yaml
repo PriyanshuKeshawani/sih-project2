@@ -12,9 +12,9 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.12
-      - key: GROQ_API_KEY
+      - key: SARVAM_API_KEY
         sync: false
-      - key: GROQ_MODEL
-        value: llama-3.3-70b-versatile
+      - key: SARVAM_MODEL
+        value: sarvam-105b-conversations
       - key: MISSION_MODE
         value: DEMO
