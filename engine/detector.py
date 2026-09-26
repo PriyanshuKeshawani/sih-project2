@@ -107,12 +107,26 @@ class SonarDetector:
         orig_bgr = SonarPreprocessor.ensure_3channel_bgr(img)
         orig_h, orig_w = orig_bgr.shape[:2]
 
+        max_dim = max(orig_h, orig_w)
+        if max_dim > 1280:
+            scale_fac = 1280.0 / float(max_dim)
+            tile_w = max(640, int(round(orig_w * scale_fac)))
+            tile_h = max(640, int(round(orig_h * scale_fac)))
+            prep_input = cv2.resize(orig_bgr, (tile_w, tile_h), interpolation=cv2.INTER_AREA)
+            t_scale_x = orig_w / float(tile_w)
+            t_scale_y = orig_h / float(tile_h)
+        else:
+            prep_input = orig_bgr
+            tile_w, tile_h = orig_w, orig_h
+            t_scale_x = 1.0
+            t_scale_y = 1.0
+
         # 1. Acoustic Preprocessing
         if preprocess:
             cfg = preprocess_config if preprocess_config is not None else PreprocessConfig()
-            working_img = SonarPreprocessor.preprocess(orig_bgr, cfg)
+            working_img = SonarPreprocessor.preprocess(prep_input, cfg)
         else:
-            working_img = orig_bgr
+            working_img = prep_input
 
         # 2. Hybrid Multi-Scale Tiling & Full-Frame Inference
         all_global_boxes: List[List[int]] = []
@@ -142,24 +156,9 @@ class SonarDetector:
                 all_tile_ids.append("tile_direct")
                 raw_tile_detections_count += 1
 
-        # Cap max tiling dimensions to 1280 to prevent CPU starvation on low-tier cloud instances
-        max_dim = max(orig_h, orig_w)
-        if max_dim > 1280:
-            scale_fac = 1280.0 / float(max_dim)
-            tile_w = max(640, int(round(orig_w * scale_fac)))
-            tile_h = max(640, int(round(orig_h * scale_fac)))
-            tile_input_img = cv2.resize(working_img, (tile_w, tile_h), interpolation=cv2.INTER_AREA)
-            t_scale_x = orig_w / float(tile_w)
-            t_scale_y = orig_h / float(tile_h)
-        else:
-            tile_input_img = working_img
-            tile_w, tile_h = orig_w, orig_h
-            t_scale_x = 1.0
-            t_scale_y = 1.0
-
         if tiling:
             tiler = SonarTiler(tile_size=tile_size, overlap=overlap)
-            tiles = tiler.split_into_tiles(tile_input_img)
+            tiles = tiler.split_into_tiles(working_img)
         else:
             tiles = []
 
