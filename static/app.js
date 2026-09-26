@@ -585,13 +585,17 @@ function renderInteractiveOverlays() {
 
 function getCautiousLabel(className) {
   if (!className) return "UNKNOWN CONTACT";
+  const upper = className.toUpperCase();
+  if (upper.includes("CLASS CONTACT") || upper.includes("CONTACT") || upper.includes("STRUCTURE")) {
+    return upper;
+  }
   const lower = className.toLowerCase();
-  if (lower === "shipwreck") return "SHIPWRECK-CLASS CONTACT";
-  if (lower === "ghost_net") return "GHOST_NET-CLASS CONTACT";
-  if (lower === "mine_cylinder") return "CYLINDRICAL CONTACT";
-  if (lower === "submarine_pipeline") return "PIPELINE-CLASS STRUCTURE";
-  if (lower === "crab_pot") return "CRAB_POT-CLASS CONTACT";
-  return `${className.toUpperCase()}-CLASS CONTACT`;
+  if (lower.includes("shipwreck")) return "SHIPWRECK-CLASS CONTACT";
+  if (lower.includes("ghost_net")) return "GHOST_NET-CLASS CONTACT";
+  if (lower.includes("mine")) return "CYLINDRICAL CONTACT";
+  if (lower.includes("pipe")) return "PIPELINE-CLASS STRUCTURE";
+  if (lower.includes("crab")) return "CRAB_POT-CLASS CONTACT";
+  return `${upper}-CLASS CONTACT`;
 }
 
 function getPersistenceIcon(status) {
