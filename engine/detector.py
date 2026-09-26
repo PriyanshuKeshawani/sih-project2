@@ -108,8 +108,8 @@ class SonarDetector:
         orig_h, orig_w = orig_bgr.shape[:2]
 
         max_dim = max(orig_h, orig_w)
-        if max_dim > 1280:
-            scale_fac = 1280.0 / float(max_dim)
+        if max_dim > 960:
+            scale_fac = 960.0 / float(max_dim)
             tile_w = max(640, int(round(orig_w * scale_fac)))
             tile_h = max(640, int(round(orig_h * scale_fac)))
             prep_input = cv2.resize(orig_bgr, (tile_w, tile_h), interpolation=cv2.INTER_AREA)
@@ -157,7 +157,7 @@ class SonarDetector:
                 raw_tile_detections_count += 1
 
         if tiling:
-            tiler = SonarTiler(tile_size=tile_size, overlap=overlap)
+            tiler = SonarTiler(tile_size=tile_size, overlap=0.10)
             tiles = tiler.split_into_tiles(working_img)
         else:
             tiles = []

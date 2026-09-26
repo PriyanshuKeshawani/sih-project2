@@ -211,19 +211,21 @@ async def scan_sonar(
         console_log("TEMPORAL", f"track={o.get('track_id')} observation={o.get('observation_count')} status={o.get('persistence_status')}", scan_id=scan_id)
 
     results = []
-    for obs in enriched_obs:
+    for d_idx, obs in enumerate(enriched_obs):
         temporal_ctx = {
             "track_id": obs.get("track_id"),
             "persistence_status": obs.get("persistence_status"),
             "observation_count": obs.get("observation_count"),
             "track_age_s": obs.get("track_age_s")
         }
+        # Run Laya on primary contact; secondary contacts use deterministic reflex (<0.1ms)
         ref = reflex.process_reflex(
             detection=obs,
             physics={"elevation_m": obs.get("elevation_m"), "shadow_detected": bool(obs.get("elevation_m"))},
             geo=obs.get("geo"),
             temporal=temporal_ctx,
-            scan_id=scan_id
+            scan_id=scan_id,
+            allow_laya=(d_idx == 0)
         )
         obs["reflex"] = ref
         results.append(obs)

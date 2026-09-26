@@ -336,7 +336,8 @@ class System1ReflexEngine:
         geo: Optional[Dict[str, Any]] = None,
         metadata: Optional[Dict[str, Any]] = None,
         scan_id: Optional[str] = None,
-        temporal: Optional[Dict[str, Any]] = None
+        temporal: Optional[Dict[str, Any]] = None,
+        allow_laya: bool = True
     ) -> Dict[str, Any]:
         """
         Full System 1 Reflex evaluation for a single detection with physics & geo context.
@@ -382,8 +383,11 @@ class System1ReflexEngine:
             heading_deg=heading_deg
         )
 
-        # 3. Route through System 1 Manager (Laya Primary or Deterministic Fallback)
-        s1_decision: System1Decision = self.system1_manager.decide(input_state)
+        # 3. Route through System 1 Manager (Laya Primary if allowed, or sub-millisecond Fallback)
+        if allow_laya:
+            s1_decision: System1Decision = self.system1_manager.decide(input_state)
+        else:
+            s1_decision: System1Decision = self.system1_manager.fallback_engine.decide(input_state)
 
         # Append temporal persistence justification if confirmed
         if temporal and temporal.get("persistence_status") == "PERSISTENT":

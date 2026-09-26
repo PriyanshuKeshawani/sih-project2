@@ -449,16 +449,19 @@ class LayaDecisionEngine(System1DecisionEngine):
             raise RuntimeError(f"LayaDecisionEngine is not active ({self.status}): {self.load_error}")
 
         laya_prompt = state.to_laya_prompt()
+        elev_bucket = round(state.elevation_m, 1) if state.elevation_m is not None else -1.0
+        conf_bucket = round(state.detector_confidence, 1)
+        cache_key = f"{state.contact_class}_{conf_bucket}_{elev_bucket}_{state.evidence_quality}"
 
         try:
-            if laya_prompt in self._cache:
-                res, latency_ms = self._cache[laya_prompt]
+            if cache_key in self._cache:
+                res, latency_ms = self._cache[cache_key]
             else:
                 t0 = time.perf_counter()
                 res = self.agent.system_one(laya_prompt, LAYA_DECISION_QUESTIONS)
                 latency_ms = round((time.perf_counter() - t0) * 1000.0, 3)
                 if len(self._cache) < 500:
-                    self._cache[laya_prompt] = (res, latency_ms)
+                    self._cache[cache_key] = (res, latency_ms)
 
 
             answers = res.get("answers", {})
