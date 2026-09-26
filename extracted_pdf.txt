@@ -1,0 +1,177 @@
+=== PAGE 1 ===
+Top 10 Shortlist Strategy SIH 2026 — Beginner Friendly Selection Guide
+SMART INDIA HACKATHON 2026
+TOP 10 PROBLEM STATEMENTS — BEGINNER FRIENDLY
+GUIDE
+Bilkul Aasaan Bhasha Me Samjho: Problem, Solution, Tech Stack & Judges Presentation Tips
+Bina Kisi Confusion Ke Shortlist Kaise Ho? (Winning Strategy)
+Agar aap pehli baar SIH me participate kar rahe hain, to generic social/web apps me hazaro teams se compete mat
+karo. Top Ministries (ISRO, DRDO, MoES, Land Dept, Coal India) ke in T op 10 Problem Statements me se ek
+chuno. Inme:
+• Competition 90% Kam Hota Hai: Mass spamming teams in technical problems se dur rehti hain.
+• W orking Demo Dikahana Aasaan Hai: Live Maps, AI Scanners, ya Visual Charts dekhte hi judges full marks
+dete hain.
+RANK 1 — PS ID: 26014 | Integrated GIS Digital Public Infrastructure for Land Governance
+(Land Stack)
+Ministry / Organization: Ministry of Rural Development
+Shortlist Hone Ka Reason: Sarkar ka direct National Priority project hai. GIS map wala demo
+judges ko bahut impressed karta hai aur competitors kam hote hain.
+1. Aasaan Samjh (What is the Problem?):
+Zameen ke sabhi kaagaz (registry, tax, ownership, map) alag-alag oﬃces me bikhre hain. Aapko ek single map-based
+website (Land Stack) banana hai jahan zameen par click karte hi uski saari jankari dikh jaye.
+2. Aapko Kya Banana Hai (What to Build?):
+Ek Google Maps jaisa dashboard jisme har zameen ka plot highlighted ho, aur click karne par owner name, land area,
+registry history, aur tax status dikhe.
+3. Beginners T ech Stack (Kaise Banayein?):
+Frontend: Leaflet.js / Mapbox + React | Backend: Python FastAPI | Database: PostGIS / PostgreSQL
+Judges Ke Saamne Presentation Tip:
+PPT me ek working map dikhao jisme 1 plot click karke owner details load ho rahi hon.
+RANK 2 — PS ID: 26016 | Real-Time National Land Acquisition & Management System
+Ministry / Organization: Ministry of Rural Development
+Shortlist Hone Ka Reason: Multi-ministerial infrastructure tracking project hai. W orkﬂow dash-
+board aur visual charts dekhte hi clear ho jate hain.
+1. Aasaan Samjh (What is the Problem?):
+Highways ya Railways ke liye zameen khareedne (land acquisition) ka process paper par chalta hai jisse saalo lag jate
+hain. Aapko iska complete digital monitoring system banana hai.
+2. Aapko Kya Banana Hai (What to Build?):
+Ek Web Portal jahan project proposals upload ho sakein, zameen ki geo-tagging dikhe, compensation (muavza) kitna
+diya gaya uska real-time bar-chart dikhe.
+3. Beginners T ech Stack (Kaise Banayein?):
+Frontend: React / HTML-CSS | Backend: Python Flask / Node.js | Database: MySQL / PostgreSQL
+Aasaan Bhasha Me Master Guide Page 1
+
+=== PAGE 2 ===
+Top 10 Shortlist Strategy SIH 2026 — Beginner Friendly Selection Guide
+Judges Ke Saamne Presentation Tip:
+Dashboard me Status Tracker dikhao: Proposal -> Notiﬁed -> Acquired -> Compensation Paid.
+RANK 3 — PS ID: 26019 | National Digital Platform for Research & Policy Innovation in Land
+Governance
+Ministry / Organization: Ministry of Rural Development
+Shortlist Hone Ka Reason: AI + Knowledge Base ka unique combination hai. Easy to build,
+visual, aur innovative hai.
+1. Aasaan Samjh (What is the Problem?):
+Land laws aur research papers aam logo aur researchers ko nahi milte. Aapko ek AI-powered Knowledge Repository
+Portal banana hai.
+2. Aapko Kya Banana Hai (What to Build?):
+Ek Smart Research Search Engine portal jisme land policies, court judgments, aur GIS trends ka AI summary aur
+download option ho.
+3. Beginners T ech Stack (Kaise Banayein?):
+Frontend: React / Streamlit | Backend: Python (FastAPI) | AI Search: LangChain /
+Sentence-Transformers
+Judges Ke Saamne Presentation Tip:
+Search bar me "Land acquisition policy Punjab" type karke AI Summary aur PDF download demo dikhao.
+RANK 4 — PS ID: 26024 | AI-Based Smart Governance & Compliance Monitoring for Coal
+Mines
+Ministry / Organization: Ministry of Coal (Coal India / CMPDI)
+Shortlist Hone Ka Reason: Coal India ka oﬃcial problem hai. AI Helmet/Safety Detection ka
+live camera demo judges ko 100% impress karega.
+1. Aasaan Samjh (What is the Problem?):
+Koyla khano (Coal mines) me safety aur environment rules ki report manual banti hai jisse chori aur accidents hote
+hain. Isko AI se automate karna hai.
+2. Aapko Kya Banana Hai (What to Build?):
+Ek Central Web Dashboard + Field Mobile App. Inspector safety photo upload karega, AI check karega ki worker ne
+helmet pehna hai ya nahi, aur violations par auto-alert bhejega.
+3. Beginners T ech Stack (Kaise Banayein?):
+AI: Python OpenCV + YOLOv8 | Web: React / Streamlit | Mobile: Flutter / Progressive Web App
+Judges Ke Saamne Presentation Tip:
+Live webcam demo me helmet detection ka box dikhao aur Safety Compliance Score 95% generate karke dikhao.
+RANK 5 — PS ID: 26057 | AI-Powered Underwater Marine Debris & Anomaly Detection System
+Ministry / Organization: Ministry of Earth Sciences (MoES / NIOT)
+Shortlist Hone Ka Reason: Deep-T ech Marine project hai. Normal students samundar ke projects
+nahi chunte, isliye competition lagbhag 0 hota hai!
+1. Aasaan Samjh (What is the Problem?):
+Samundar ke andar kharab macchli pakadne ke jaal (ghost nets) aur kachra underwater life ko khatam karte hain.
+Aasaan Bhasha Me Master Guide Page 2
+
+=== PAGE 3 ===
+Top 10 Shortlist Strategy SIH 2026 — Beginner Friendly Selection Guide
+Sonar images se kachra pehchanne wala AI banana hai.
+2. Aapko Kya Banana Hai (What to Build?):
+Ek Web Application jahan Side-Scan Sonar (underwater image) upload karne par AI model kachre/jaal ke charo taraf
+red box (bounding box) draw kar de aur GPS location report kare.
+3. Beginners T ech Stack (Kaise Banayein?):
+AI: Python PyTorch / YOLOv8 / OpenCV | Web UI: Streamlit / Gradio / React
+Judges Ke Saamne Presentation Tip:
+Sonar image upload karke "Ghost Net Detected - Conﬁdence 94% - Lat: 13.08, Long: 80.27" dikhao.
+RANK 6 — PS ID: 26078 | AI-Driven Spatio-T emporal T racking of Extreme W eather Anomalies
+Ministry / Organization: Ministry of Earth Sciences (NCMR WF)
+Shortlist Hone Ka Reason: W eather forecasting disaster management ka sabse hot topic hai.
+Charts aur Heatmaps evaluators ko bohot pasand aate hain.
+1. Aasaan Samjh (What is the Problem?):
+Toofan, bhayankar barish, aur heatwaves ko 3-10 din pehle track karna mushkil hota hai. Aapko weather data se
+extreme weather ko predict karne wala AI dashboard banana hai.
+2. Aapko Kya Banana Hai (What to Build?):
+Ek Weather Alert Map Dashboard jo rain/temperature data ko process karke bataye ki kis 5km area me next 24 hours
+me cloudburst ya heatwave ka risk hai.
+3. Beginners T ech Stack (Kaise Banayein?):
+Data/AI: Python Pandas + Scikit-Learn / XGBoost | Map UI: Leaflet.js / Streamlit
+Judges Ke Saamne Presentation Tip:
+Map par Red Heatmap Zone dikhao aur auto SMS Alert "High Flood Risk in 5km Radius" trigger karke dikhao.
+RANK 7 — PS ID: 26094 | AI-Powered Mental Health Monitoring & Distress Prediction for
+Victims
+Ministry / Organization: Ministry of Social Justice & Empowerment (MoSJE)
+Shortlist Hone Ka Reason: Social cause + HealthT ech hai. Emotional AI demo evaluators ke dil
+ko chhoo jata hai.
+1. Aasaan Samjh (What is the Problem?):
+Crime aur atrocities ke shikar logo me depression aur mental trauma ho jata hai. Sarkar unke mental well-being ko
+track karke help karna chahti hai.
+2. Aapko Kya Banana Hai (What to Build?):
+Ek AI Chatbot / Voice Assistant jo victim se simple baatein kare (Hindi/English me), unke jawab aur sentiment se
+Distress Level (Low/Medium/High) calculate kare aur counsellors ko alert kare.
+3. Beginners T ech Stack (Kaise Banayein?):
+NLP/AI: Python NLTK / VADER Sentiment / HuggingFace | Web Chatbot: React / Web Speech API
+Judges Ke Saamne Presentation Tip:
+Chatbot me victim ka response "Mujhe darr lag raha hai" daal kar "Distress Score: 85% (High Risk) - Counsellor
+Alerted" dikhao.
+Aasaan Bhasha Me Master Guide Page 3
+
+=== PAGE 4 ===
+Top 10 Shortlist Strategy SIH 2026 — Beginner Friendly Selection Guide
+RANK 8 — PS ID: 26011 | 3D ULPIN Generation & V ertical Property Mapping System
+Ministry / Organization: Ministry of Rural Development (DoLR)
+Shortlist Hone Ka Reason: 3D W eb visualization bohot rare hoti hai hackathons me. 3D building
+model ghumakar dikhane par 100% shortlist chance hai.
+1. Aasaan Samjh (What is the Problem?):
+2D map par multi-storey building ke 20 ﬂats ek hi zameen par dikhte hain. Aapko har ﬂat aur basement ka alag 3D
+Box (3D ULPIN ID) wala map banana hai.
+2. Aapko Kya Banana Hai (What to Build?):
+Ek 3D Web Viewer jisme multi-storey building 3D me dikhe. Jab user Floor 5, Flat 502 par click kare to us ﬂat ka 3D
+block highlight ho aur owner details aaye.
+3. Beginners T ech Stack (Kaise Banayein?):
+3D Web UI: Three.js / Cesium.js / Babylon.js | Backend: Python FastAPI / Node.js
+Judges Ke Saamne Presentation Tip:
+Browser me 3D Building ghumakar Flat 301 click karke uski ownership window khol kar dikhao.
+RANK 9 — PS ID: 26012 | AI-Based Automated Urban Parcel Mapping using Drone Imagery
+Ministry / Organization: Ministry of Rural Development (DoLR)
+Shortlist Hone Ka Reason: Drone + AI fast cadastral mapping survey eﬃciency ko 100x badha
+deta hai. Direct high priority tool.
+1. Aasaan Samjh (What is the Problem?):
+Drone se li gayi aerial photos se ghar aur sadkon ke border manually draw karne me hafte lagte hain. AI se borders
+auto-detect karne hain.
+2. Aapko Kya Banana Hai (What to Build?):
+Ek Web Tool jahan Drone Photo upload hoti hai, AI background me gharon ke charo taraf yellow boundaries auto-draw
+kar deta hai aur CAD/GIS ﬁle download karne deta hai.
+3. Beginners T ech Stack (Kaise Banayein?):
+AI: Python OpenCV + Segment Anything Model (SAM) / YOLOv8 | Web: Streamlit / Flask
+Judges Ke Saamne Presentation Tip:
+Raw Drone Image -> Click "Auto Segment" -> Yellow Parcel Lines Drawn instantly.
+RANK 10 — PS ID: 26018 | Intelligent Land Record Digitization and V alidation System (OCR)
+Ministry / Organization: Ministry of Rural Development (DoLR)
+Shortlist Hone Ka Reason: Har government department me record digitization ki zarurat hai.
+Live scanning demo se judges instant marks dete hain.
+1. Aasaan Samjh (What is the Problem?):
+50 saal purane zameen ke handwritten kaagaz aur Urdu/Hindi registers corrupt ho rahe hain. Unse text extract karke
+computer database me feed karna hai.
+2. Aapko Kya Banana Hai (What to Build?):
+Ek Document Scanner Web App. Purane paper ki photo upload karte hi OCR name, khasra number, aur land area
+pehchan kar form ﬁelds me ﬁll kar de.
+3. Beginners T ech Stack (Kaise Banayein?):
+OCR/AI: Tesseract OCR / EasyOCR / Python OpenCV | Web UI: React / Streamlit
+Aasaan Bhasha Me Master Guide Page 4
+
+=== PAGE 5 ===
+Top 10 Shortlist Strategy SIH 2026 — Beginner Friendly Selection Guide
+Judges Ke Saamne Presentation Tip:
+Purana handwritten kaagaz upload karo -> Screen par Name: "Ramesh Kumar", Khasra: "452/1" auto-ﬁll hoke
+dikhao.
+Aasaan Bhasha Me Master Guide Page 5

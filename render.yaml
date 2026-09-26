@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: samudra-sonar-ai
+    env: python
+    buildCommand: pip install --no-cache-dir -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    # Note on Plan Selection:
+    # - Free Plan (512MB RAM): Suitable for ONNX YOLO + Deterministic System 1 Fallback + Groq System 2 (~220MB RAM).
+    # - Starter/Standard Plan (>=2GB RAM): Required to host the full 804MB local Laya PyTorch safetensors checkpoint in memory.
+    plan: free
+    autoDeploy: false
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.12
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: llama-3.3-70b-versatile
+      - key: MISSION_MODE
+        value: DEMO

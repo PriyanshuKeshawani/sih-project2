@@ -1,0 +1,342 @@
+{
+  "panel_results": [
+    {
+      "panel_id": 1,
+      "panel_name": "shipwreck_large",
+      "label": "Shipwreck (Large)",
+      "in_taxonomy": true,
+      "expected_taxonomy": "shipwreck",
+      "primary_prediction": "shipwreck",
+      "confidence": 0.773,
+      "all_5_scores": {
+        "crab_pot": 0.0,
+        "submarine_pipeline": 2e-05,
+        "shipwreck": 0.77349,
+        "ghost_net": 1e-05,
+        "mine_cylinder": 0.0
+      },
+      "detections_count_025": 1
+    },
+    {
+      "panel_id": 2,
+      "panel_name": "shipwreck_medium",
+      "label": "Shipwreck (Medium)",
+      "in_taxonomy": true,
+      "expected_taxonomy": "shipwreck",
+      "primary_prediction": "shipwreck",
+      "confidence": 0.662,
+      "all_5_scores": {
+        "crab_pot": 0.0,
+        "submarine_pipeline": 0.0,
+        "shipwreck": 0.66248,
+        "ghost_net": 0.0,
+        "mine_cylinder": 0.0
+      },
+      "detections_count_025": 1
+    },
+    {
+      "panel_id": 3,
+      "panel_name": "shipwreck_broken",
+      "label": "Shipwreck (Broken)",
+      "in_taxonomy": true,
+      "expected_taxonomy": "shipwreck",
+      "primary_prediction": "shipwreck",
+      "confidence": 0.567,
+      "all_5_scores": {
+        "crab_pot": 0.0,
+        "submarine_pipeline": 0.0,
+        "shipwreck": 0.56746,
+        "ghost_net": 0.0,
+        "mine_cylinder": 0.0
+      },
+      "detections_count_025": 1
+    },
+    {
+      "panel_id": 4,
+      "panel_name": "pipeline",
+      "label": "Pipe / Pipeline",
+      "in_taxonomy": true,
+      "expected_taxonomy": "submarine_pipeline",
+      "primary_prediction": "shipwreck",
+      "confidence": 0.726,
+      "all_5_scores": {
+        "crab_pot": 0.0,
+        "submarine_pipeline": 0.0,
+        "shipwreck": 0.7258,
+        "ghost_net": 1e-05,
+        "mine_cylinder": 0.0
+      },
+      "detections_count_025": 1
+    },
+    {
+      "panel_id": 5,
+      "panel_name": "cylinder_debris",
+      "label": "Cylinder (Debris)",
+      "in_taxonomy": true,
+      "expected_taxonomy": "mine_cylinder",
+      "primary_prediction": "shipwreck",
+      "confidence": 0.653,
+      "all_5_scores": {
+        "crab_pot": 0.0,
+        "submarine_pipeline": 0.0,
+        "shipwreck": 0.65332,
+        "ghost_net": 0.0,
+        "mine_cylinder": 0.0
+      },
+      "detections_count_025": 1
+    },
+    {
+      "panel_id": 6,
+      "panel_name": "ghost_net",
+      "label": "Ghost Net (Fishing Net)",
+      "in_taxonomy": true,
+      "expected_taxonomy": "ghost_net",
+      "primary_prediction": "shipwreck",
+      "confidence": 0.788,
+      "all_5_scores": {
+        "crab_pot": 0.0,
+        "submarine_pipeline": 0.0,
+        "shipwreck": 0.78753,
+        "ghost_net": 0.0,
+        "mine_cylinder": 0.0
+      },
+      "detections_count_025": 1
+    },
+    {
+      "panel_id": 7,
+      "panel_name": "manmade_debris",
+      "label": "Man-made Debris",
+      "in_taxonomy": false,
+      "expected_taxonomy": "UNKNOWN / NOT_IN_MODEL_TAXONOMY",
+      "primary_prediction": "shipwreck",
+      "confidence": 0.69,
+      "all_5_scores": {
+        "crab_pot": 0.0,
+        "submarine_pipeline": 0.0,
+        "shipwreck": 0.69004,
+        "ghost_net": 0.0,
+        "mine_cylinder": 0.0
+      },
+      "detections_count_025": 1
+    },
+    {
+      "panel_id": 8,
+      "panel_name": "anchor_chain",
+      "label": "Anchor / Chain",
+      "in_taxonomy": false,
+      "expected_taxonomy": "UNKNOWN / NOT_IN_MODEL_TAXONOMY",
+      "primary_prediction": "NONE",
+      "confidence": 0.217,
+      "all_5_scores": {
+        "crab_pot": 0.0,
+        "submarine_pipeline": 0.0,
+        "shipwreck": 0.0,
+        "ghost_net": 0.0,
+        "mine_cylinder": 0.21722
+      },
+      "detections_count_025": 1
+    },
+    {
+      "panel_id": 9,
+      "panel_name": "tire_rubber",
+      "label": "Tire / Rubber Debris",
+      "in_taxonomy": false,
+      "expected_taxonomy": "UNKNOWN / NOT_IN_MODEL_TAXONOMY",
+      "primary_prediction": "shipwreck",
+      "confidence": 0.816,
+      "all_5_scores": {
+        "crab_pot": 0.0,
+        "submarine_pipeline": 0.0,
+        "shipwreck": 0.81592,
+        "ghost_net": 0.0,
+        "mine_cylinder": 0.0
+      },
+      "detections_count_025": 1
+    },
+    {
+      "panel_id": 10,
+      "panel_name": "natural_rock",
+      "label": "Natural Rock (Negative)",
+      "in_taxonomy": false,
+      "expected_taxonomy": "UNKNOWN / BACKGROUND",
+      "primary_prediction": "shipwreck",
+      "confidence": 0.769,
+      "all_5_scores": {
+        "crab_pot": 0.0,
+        "submarine_pipeline": 0.0,
+        "shipwreck": 0.76867,
+        "ghost_net": 0.0,
+        "mine_cylinder": 0.0
+      },
+      "detections_count_025": 1
+    },
+    {
+      "panel_id": 11,
+      "panel_name": "sand_ripples",
+      "label": "Sand Ripples (Negative)",
+      "in_taxonomy": false,
+      "expected_taxonomy": "UNKNOWN / BACKGROUND",
+      "primary_prediction": "NONE",
+      "confidence": 0.028,
+      "all_5_scores": {
+        "crab_pot": 0.0,
+        "submarine_pipeline": 3e-05,
+        "shipwreck": 0.02801,
+        "ghost_net": 0.0,
+        "mine_cylinder": 0.0
+      },
+      "detections_count_025": 0
+    },
+    {
+      "panel_id": 12,
+      "panel_name": "mixed_scene",
+      "label": "Mixed Scene (Multiple)",
+      "in_taxonomy": true,
+      "expected_taxonomy": "mixed",
+      "primary_prediction": "shipwreck",
+      "confidence": 0.817,
+      "all_5_scores": {
+        "crab_pot": 0.0,
+        "submarine_pipeline": 0.0,
+        "shipwreck": 0.81664,
+        "ghost_net": 1e-05,
+        "mine_cylinder": 0.0
+      },
+      "detections_count_025": 1
+    }
+  ],
+  "unknown_object_shipwreck_assignment_rate": 0.6,
+  "mode_comparison": {
+    "mode_a": {
+      "name": "Mode A: RAW + Tiling",
+      "total_detections": 16,
+      "class_distribution": {
+        "shipwreck": 16
+      }
+    },
+    "mode_b": {
+      "name": "Mode B: CLAHE + Bilateral + Tiling",
+      "total_detections": 13,
+      "class_distribution": {
+        "shipwreck": 13
+      }
+    },
+    "mode_c_notile": {
+      "name": "Mode C: Full Image Direct (No Tiling)",
+      "total_detections": 9,
+      "class_distribution": {
+        "shipwreck": 9
+      }
+    }
+  },
+  "matrix_rows": [
+    {
+      "category": "Shipwreck (Large)",
+      "shipwreck": 1,
+      "pipeline": 0,
+      "ghost_net": 0,
+      "mine_cylinder": 0,
+      "crab_pot": 0,
+      "none": 0
+    },
+    {
+      "category": "Shipwreck (Medium)",
+      "shipwreck": 1,
+      "pipeline": 0,
+      "ghost_net": 0,
+      "mine_cylinder": 0,
+      "crab_pot": 0,
+      "none": 0
+    },
+    {
+      "category": "Shipwreck (Broken)",
+      "shipwreck": 1,
+      "pipeline": 0,
+      "ghost_net": 0,
+      "mine_cylinder": 0,
+      "crab_pot": 0,
+      "none": 0
+    },
+    {
+      "category": "Pipe / Pipeline",
+      "shipwreck": 1,
+      "pipeline": 0,
+      "ghost_net": 0,
+      "mine_cylinder": 0,
+      "crab_pot": 0,
+      "none": 0
+    },
+    {
+      "category": "Cylinder (Debris)",
+      "shipwreck": 1,
+      "pipeline": 0,
+      "ghost_net": 0,
+      "mine_cylinder": 0,
+      "crab_pot": 0,
+      "none": 0
+    },
+    {
+      "category": "Ghost Net (Fishing Net)",
+      "shipwreck": 1,
+      "pipeline": 0,
+      "ghost_net": 0,
+      "mine_cylinder": 0,
+      "crab_pot": 0,
+      "none": 0
+    },
+    {
+      "category": "Man-made Debris",
+      "shipwreck": 1,
+      "pipeline": 0,
+      "ghost_net": 0,
+      "mine_cylinder": 0,
+      "crab_pot": 0,
+      "none": 0
+    },
+    {
+      "category": "Anchor / Chain",
+      "shipwreck": 0,
+      "pipeline": 0,
+      "ghost_net": 0,
+      "mine_cylinder": 0,
+      "crab_pot": 0,
+      "none": 1
+    },
+    {
+      "category": "Tire / Rubber Debris",
+      "shipwreck": 1,
+      "pipeline": 0,
+      "ghost_net": 0,
+      "mine_cylinder": 0,
+      "crab_pot": 0,
+      "none": 0
+    },
+    {
+      "category": "Natural Rock (Negative)",
+      "shipwreck": 1,
+      "pipeline": 0,
+      "ghost_net": 0,
+      "mine_cylinder": 0,
+      "crab_pot": 0,
+      "none": 0
+    },
+    {
+      "category": "Sand Ripples (Negative)",
+      "shipwreck": 0,
+      "pipeline": 0,
+      "ghost_net": 0,
+      "mine_cylinder": 0,
+      "crab_pot": 0,
+      "none": 1
+    },
+    {
+      "category": "Mixed Scene (Multiple)",
+      "shipwreck": 1,
+      "pipeline": 0,
+      "ghost_net": 0,
+      "mine_cylinder": 0,
+      "crab_pot": 0,
+      "none": 0
+    }
+  ]
+}

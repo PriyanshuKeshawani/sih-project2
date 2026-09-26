@@ -1,0 +1,20 @@
+{
+  "page_load_ms": {
+    "min": 6.69,
+    "median": 7.75,
+    "mean": 10.79,
+    "p95": 25.75
+  },
+  "scan_rendering_ms": {
+    "min": 187.94,
+    "median": 212.06,
+    "mean": 583.95,
+    "p95": 3870.92
+  },
+  "track_update_ms": {
+    "min": 5.09,
+    "median": 6.49,
+    "mean": 6.5,
+    "p95": 8.61
+  }
+}

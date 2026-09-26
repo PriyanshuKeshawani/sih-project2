@@ -1,0 +1,10 @@
+{
+  "confidence_threshold": 0.45,
+  "backend_final_count": 7,
+  "api_final_count": 7,
+  "frontend_render_count": 7,
+  "duplicate_render_count": 0,
+  "raw_tile_detection_count": 51,
+  "tile_count": 4,
+  "detections_consistency_verified": true
+}

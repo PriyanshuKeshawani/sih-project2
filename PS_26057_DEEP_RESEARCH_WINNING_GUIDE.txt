@@ -1,0 +1,136 @@
+# SIH 2026 — PROBLEM STATEMENT 26057: MASTER DEEP RESEARCH & WINNING BLUEPRINT
+
+================================================================================
+PROJECT ID: SIH26057
+TITLE: AI-Powered Automated Underwater Marine Debris and Anomaly Detection System using Side-Scan Sonar Imagery
+MINISTRY / ORG: Ministry of Earth Sciences (MoES) & National Institute of Ocean Technology (NIOT, Chennai)
+THEME: Disaster Management & Marine Conservation
+CATEGORY: Software (Deep-Tech / Computer Vision / Edge Robotics / GIS)
+================================================================================
+
+--------------------------------------------------------------------------------
+1. EXECUTIVE SUMMARY & REAL-WORLD CONTEXT
+--------------------------------------------------------------------------------
+* Problem Statement Focus:
+  Accumulation of man-made debris in marine ecosystems, especially "Ghost Nets" (abandoned, lost, or discarded fishing gear - ALDFG).
+* Critical Geographic Hotspots in India:
+  Gulf of Mannar, Palk Bay corridor, Andaman & Nicobar, Lakshadweep reefs.
+* Ecological Crisis:
+  Endangered marine life such as Dugongs (Sea Cows), Olive Ridley sea turtles, dolphins, and coral reefs are trapped and killed in ghost gear. It also poses navigation hazards to commercial and naval vessel propellers.
+* The Human Bottleneck:
+  Towed side-scan sonars and Autonomous Underwater Vehicles (AUVs) survey hundreds of kilometers of seafloor, generating massive logs of acoustic imagery. Manual inspection by hydrographers is painfully slow (takes weeks/months), expensive, and prone to human fatigue.
+
+--------------------------------------------------------------------------------
+2. WHY OPTICAL CAMERAS FAIL & WHY SONAR (SSS) IS USED
+--------------------------------------------------------------------------------
+* Optical Camera Limitations:
+  In underwater environments (especially at depths > 20 meters), light attenuates rapidly, and water turbidity/particulates cause extreme scattering. Visual cameras cannot see beyond 2-5 meters.
+* Side-Scan Sonar (SSS) Physics:
+  Instead of light, SSS uses high-frequency acoustic waves (sound pulses) emitted sideways from a tow-fish or AUV.
+* Acoustic Signature Components:
+  1. Acoustic Backscatter (Highlight):
+     High-density objects (metal hulls, hard plastics, rocks, concrete) reflect strong echoes, appearing as bright pixels.
+  2. Acoustic Shadow:
+     Sound cannot pass through solid objects, creating a zero-return black shadow zone directly behind the object.
+     CRUCIAL WINNING INSIGHT:
+     The length of the acoustic shadow, combined with the altitude of the sonar vehicle, allows calculating the EXACT physical height (vertical elevation) of the debris above the seabed!
+  3. Slant-Range Distortion:
+     Raw sonar measures travel time (slant range), which compresses near-nadir regions. Slant-range correction transforms the data into true horizontal ground range.
+  4. Speckle Noise:
+     Multi-path acoustic interference produces heavy grain/speckle noise requiring specialized filtering (Lee, Frost, or Bilateral filters).
+
+--------------------------------------------------------------------------------
+3. HISTORICAL EVOLUTION & BENCHMARK ANALYSIS (FROM PAST TO TILL NOW)
+--------------------------------------------------------------------------------
+* Phase 1: Common Mistakes & Rejections (What Losers Did)
+  - Trained basic YOLO models on standard RGB underwater photographs from YouTube/Kaggle (colorful fish, clear water, floating plastic bottles).
+  - Failed instantly in front of NIOT scientists because actual deep-sea surveillance uses grayscale acoustic sonar waterfall streams, not visual cameras.
+
+* Phase 2: The Benchmark Shift (Projects like DRISHTI / Sonar-Drishti)
+  - Transitioned to real Side-Scan Sonar (SSS) datasets.
+  - Fine-tuned YOLOv8s on acoustic sonar strips.
+  - Shipped 4 core target classes:
+    1. ghost_net (tangled fishing gear on seabed)
+    2. shipwreck (sunken boats, hulls, structural frames)
+    3. pipeline (underwater pipes, cables)
+    4. cylinder_mine (sunken oil drums, munitions, metal cylinders)
+  - Converted PyTorch weights to ONNX format (reducing runtime from 1.5GB to <50MB) for lightweight edge execution on AUV embedded chips.
+
+* Phase 3: The 2026 1st-Prize Winning Formula (What Makes You Win SIH)
+  Today, a basic YOLO bounding box is expected by default. To secure the 1st prize, the winning team must deliver:
+  1. Physics-Informed Shadow Analysis:
+     Auto-detecting both the highlight and the acoustic shadow to estimate debris dimensions (Length x Width x Height above seabed).
+  2. False-Positive Suppression:
+     Distinguishing natural seabed topology (sand ripples, rocky reefs, boulders) from synthetic materials.
+  3. Temporal Persistence Tracking:
+     Comparing multi-pass surveys over the same sea coordinates to filter out transient moving targets (fish schools, marine life) and confirm stationary hazards.
+  4. Tactical Marine GIS & "Operation Net-Zero" Recovery Dispatch:
+     Live vessel trajectory map + automatic GPS geo-referencing (Latitude, Longitude, Water Depth) + one-click PDF mission orders for Indian Coast Guard and recovery divers.
+
+--------------------------------------------------------------------------------
+4. COMPLETE 6-TIER TECHNICAL ARCHITECTURE
+--------------------------------------------------------------------------------
+[Tier 1: Data Ingestion & Acoustic Preprocessing]
+  - Input formats: Waterfall Sonar PNG/JPEG, GeoTIFF, raw XTF (eXtended Triton Format).
+  - Preprocessing pipeline:
+    * Contrast Limited Adaptive Histogram Equalization (CLAHE) for contrast stretching.
+    * Bilateral / Lee Filter for speckle noise reduction while preserving sharp object edges.
+    * Slant-range correction based on sonar altitude.
+
+[Tier 2: Dual AI Detection & Segmentation Engine]
+  - Primary Detector: Fine-tuned YOLOv8s / YOLOv11 (Fast, high mAP on acoustic highlights).
+  - Secondary Segmenter: Segment Anything Model (SAM) or YOLOv8-Seg for irregular ghost net boundaries.
+  - Model Export: ONNX runtime + TensorRT quantization for deployment on NVIDIA Jetson / Raspberry Pi 5.
+
+[Tier 3: Acoustic Shadow Geometry & Elevation Calculation]
+  - Formula: Object Height (H) = (Sonar Altitude * Shadow Length) / (Slant Range + Shadow Length).
+  - Provides real-world hazard clearance clearance height for submarines and surface vessels.
+
+[Tier 4: Temporal Persistence Engine]
+  - Multi-pass coordinate matching. If an anomaly is detected at Lat/Long (x, y) across Pass A and Pass B (e.g. 2 hours apart), confidence increases to 99% (Confirmed Debris).
+
+[Tier 5: Tactical Command Dashboard (Web UI)]
+  - Waterfall Sonar Stream viewer with real-time sliding detection boxes.
+  - Geospatial Sea Map (Leaflet.js / Mapbox) loaded with Bathymetry overlays.
+  - Live trajectory plotting of AUV survey route in sensitive marine reserves (e.g., Gulf of Mannar).
+  - Hazard severity classification: Critical (High entanglement danger) vs Moderate vs Low.
+
+[Tier 6: Actionable Diver & Coast Guard Recovery Dispatch (PDF)]
+  - Automated Generation of formal Recovery Mission Sheet:
+    * Debris Incident ID & Timestamp
+    * Exact GPS Coordinates (Lat / Long) & Estimated Depth
+    * Debris Classification & Confidence Score
+    * Estimated Volume & Dimensions
+    * Recommended Recovery Equipment (Diver cutting shears, Crane grab, ROV robotic arm)
+
+--------------------------------------------------------------------------------
+5. OPEN-SOURCE DATASETS & RESOURCES
+--------------------------------------------------------------------------------
+1. HuggingFace - drishti-sss:
+   Repository: rehan9599/drishti-sss
+   Contains preprocessed train/val/test splits of annotated SSS imagery.
+2. HuggingFace / GitHub - drishti-detector:
+   Repository: Rehan9599/Sonar-Drishti
+   Trained YOLOv8s weights and ONNX edge inference scripts.
+3. Roboflow Universe - Ghost Nets Dataset:
+   Dedicated datasets for abandoned fishing gear and underwater debris annotations.
+4. Kaggle - SeabedObjects-KLSG:
+   Side-Scan Sonar object detection challenge benchmark for seabed anomalies.
+5. GitHub - Awesome-Sonar-Image-Resources (Jorwnpay):
+   Comprehensive academic index of side-scan and forward-looking sonar datasets.
+
+--------------------------------------------------------------------------------
+6. SIH PRESENTATION & PITCH STRATEGY
+--------------------------------------------------------------------------------
+* Slide 1 (The Emotional & National Hook):
+  Visual showing a Dugong or sea turtle entangled in a ghost net in the Gulf of Mannar.
+  Tagline: "Safeguarding India's Marine Sanctuaries with Autonomous Acoustic Intelligence."
+* Slide 2 (The Technological Gap):
+  Contrast optical cameras (useless in dark/murky sea) vs Side-Scan Sonar. Highlight that manual inspection of 100km takes 3 weeks, while your AI pipeline processes it in 8 minutes.
+* Slide 3 (The Innovation - Not Just Another YOLO):
+  Showcase Acoustic Shadow Geometry + Speckle Despeckling + Edge ONNX deployment (<50MB).
+* Slide 4 (Live Demo Sequence):
+  1. Load raw sonar waterfall strip.
+  2. Watch live noise filtering and instant bounding box: "Ghost Net Detected - 94.6% Confidence".
+  3. Interactive Map automatically pins the anomaly in the Gulf of Mannar with exact Lat/Long.
+  4. Click "Export Coast Guard Recovery Sheet" to display a professional PDF dispatch ticket.

@@ -1,0 +1,119 @@
+[
+  {
+    "track_id": "TRK-1B134B",
+    "survey_id": "SURVEY_DEMO_2026",
+    "class": "ghost_net",
+    "first_seen": "2026-09-26T12:08:54Z",
+    "last_seen": "2026-09-26T12:09:10Z",
+    "observation_count": 5,
+    "missed_scans": 0,
+    "confidence_history": [
+      0.88,
+      0.91,
+      0.94,
+      0.93,
+      0.95
+    ],
+    "positions": [
+      {
+        "lat": 9.2882,
+        "lon": 79.1325
+      },
+      {
+        "lat": 9.28822,
+        "lon": 79.13252
+      },
+      {
+        "lat": 9.28825,
+        "lon": 79.13255
+      },
+      {
+        "lat": 9.28827,
+        "lon": 79.13256
+      },
+      {
+        "lat": 9.2883,
+        "lon": 79.13258
+      }
+    ],
+    "bbox_history": [
+      {
+        "x": 100,
+        "y": 120,
+        "w": 60,
+        "h": 50
+      },
+      {
+        "x": 102,
+        "y": 122,
+        "w": 58,
+        "h": 52
+      },
+      {
+        "x": 104,
+        "y": 124,
+        "w": 62,
+        "h": 50
+      },
+      {
+        "x": 105,
+        "y": 125,
+        "w": 60,
+        "h": 51
+      },
+      {
+        "x": 107,
+        "y": 126,
+        "w": 61,
+        "h": 50
+      }
+    ],
+    "physics_history": [],
+    "persistence_status": "PERSISTENT",
+    "track_age_s": 16.0,
+    "mean_confidence": 0.922,
+    "active": true
+  },
+  {
+    "track_id": "TRK-BAF8FF",
+    "survey_id": "SURVEY_DEMO_2026",
+    "class": "shipwreck",
+    "first_seen": "2026-09-26T12:08:54Z",
+    "last_seen": "2026-09-26T12:08:58Z",
+    "observation_count": 2,
+    "missed_scans": 3,
+    "confidence_history": [
+      0.76,
+      0.72
+    ],
+    "positions": [
+      {
+        "lat": 9.2891,
+        "lon": 79.134
+      },
+      {
+        "lat": 9.28912,
+        "lon": 79.13402
+      }
+    ],
+    "bbox_history": [
+      {
+        "x": 350,
+        "y": 240,
+        "w": 120,
+        "h": 80
+      },
+      {
+        "x": 352,
+        "y": 242,
+        "w": 118,
+        "h": 78
+      }
+    ],
+    "physics_history": [],
+    "persistence_status": "TRANSIENT",
+    "track_age_s": 4.0,
+    "mean_confidence": 0.74,
+    "active": true
+  }
+]

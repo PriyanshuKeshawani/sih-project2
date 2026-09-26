@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SAMUDRA-AI | Autonomous Underwater Sonar Intelligence (SIH 26057)</title>
+  <!-- Google Fonts & Leaflet CSS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="cockpit-container">
+    <!-- Top Military / Naval Header -->
+    <header class="top-nav" role="banner">
+      <div class="nav-brand">
+        <div class="radar-pulse" aria-hidden="true"></div>
+        <div>
+          <h1>SAMUDRA-AI <span class="version-tag">v2.0 DUAL-PROCESS</span></h1>
+          <p class="sub-text">Autonomous Sonar Debris & Anomaly Detection | MoES & NIOT Chennai (SIH26057)</p>
+        </div>
+      </div>
+      <div class="nav-telemetry" role="region" aria-label="System Telemetry">
+        <div class="telemetry-badge badge-mode badge-demo" id="telemetry-mode-badge">
+          <span class="label">MODE:</span>
+          <span class="val" id="system-mode-val">PRODUCTION</span>
+          <span class="mode-provenance-tag" style="display:none;" id="demo-mode-indicator">DEMO / SIMULATION</span>
+        </div>
+        <div class="telemetry-badge"><span class="label">LOCATION:</span> <span class="val" id="telemetry-location-val">UNAVAILABLE</span></div>
+        <div class="telemetry-badge"><span class="label">AUV SOURCE:</span> <span class="val pulse-blue" id="telemetry-source-val">RECORDED_SURVEY</span></div>
+        <div class="telemetry-badge"><span class="label">GPS STATUS:</span> <span class="val" id="telemetry-gps-val">UNAVAILABLE</span></div>
+      </div>
+    </header>
+
+    <!-- Controls Ribbon -->
+    <section class="controls-ribbon" aria-label="Acoustic Scan Controls">
+      <div class="sample-picker">
+        <span class="ribbon-label">TARGET SAMPLES:</span>
+        <div id="sample-buttons" class="btn-group" role="group" aria-label="Target Sonar Samples">
+          <!-- Loaded dynamically via JS -->
+        </div>
+      </div>
+      <div class="upload-box">
+        <label for="custom-file-input" class="upload-btn" tabindex="0" role="button" aria-label="Upload Sonar Strip File">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V10.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/></svg>
+          Upload Sonar Strip
+        </label>
+        <input type="file" id="custom-file-input" accept="image/*" style="display:none;" />
+      </div>
+      <div class="altitude-control">
+        <label for="altitude-slider" class="ribbon-label">ALTITUDE:</label>
+        <input type="range" id="altitude-slider" min="5" max="25" value="12" step="0.5" aria-label="AUV Altitude Slider" />
+        <span id="alt-val" class="alt-display">12.0 m</span>
+      </div>
+      <div class="altitude-control">
+        <label for="conf-slider" class="ribbon-label">CONFIDENCE:</label>
+        <input type="range" id="conf-slider" min="0.10" max="0.90" value="0.45" step="0.05" aria-label="Confidence Threshold Slider" />
+        <span id="conf-val" class="alt-display">0.45</span>
+      </div>
+      <div class="ribbon-toggles">
+        <label class="toggle-label" title="Show tile boundaries for debugging">
+          <input type="checkbox" id="tile-grid-toggle" />
+          <span>Tile Grid</span>
+        </label>
+        <label class="toggle-label" title="Toggle interactive overlay on sonar image">
+          <input type="checkbox" id="overlay-toggle" checked />
+          <span>Interactive Overlays</span>
+        </label>
+      </div>
+      <button id="scan-btn" class="primary-scan-btn" aria-label="Run Acoustic Scan">
+        <span class="scan-icon" aria-hidden="true">⚡</span> RUN ACOUSTIC SCAN
+      </button>
+    </section>
+
+    <!-- Multi-Criteria UI Filters Bar (Section 12: UI-Only Filtering) -->
+    <section class="filters-ribbon" aria-label="Contact Filters">
+      <div class="filter-group">
+        <span class="filter-label">PERSISTENCE FILTER:</span>
+        <div class="btn-group" id="persistence-filters" role="group" aria-label="Filter by persistence status">
+          <button class="btn-filter active" data-filter="all">ALL</button>
+          <button class="btn-filter" data-filter="PERSISTENT" title="PERSISTENT = same sonar contact observed consistently across multiple scans.">🛡️ PERSISTENT</button>
+          <button class="btn-filter" data-filter="NEW_CONTACT">⚡ NEW</button>
+          <button class="btn-filter" data-filter="TRANSIENT">⏳ TRANSIENT</button>
+          <button class="btn-filter" data-filter="UNCERTAIN">❓ UNCERTAIN</button>
+        </div>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">SEVERITY:</span>
+        <div class="btn-group" id="severity-filters" role="group" aria-label="Filter by severity level">
+          <button class="btn-filter active" data-sev="all">ALL</button>
+          <button class="btn-filter" data-sev="critical">CRITICAL</button>
+          <button class="btn-filter" data-sev="warning">WARNING</button>
+          <button class="btn-filter" data-sev="info">INFO</button>
+        </div>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">CLASS:</span>
+        <select id="class-filter-select" class="filter-select" aria-label="Filter by object class">
+          <option value="all">All Classes</option>
+          <option value="ghost_net">Ghost Net</option>
+          <option value="mine_cylinder">Mine Cylinder</option>
+          <option value="shipwreck">Shipwreck Contact</option>
+          <option value="submarine_pipeline">Submarine Pipeline</option>
+          <option value="crab_pot">Crab Pot</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Main Operational Grid -->
+    <main class="cockpit-grid">
+      <!-- Left Column: Visual Sonar Waterfall, Detection Inspector, Mission Timeline -->
+      <div class="cockpit-left-col">
+        <!-- 1. Sonar Waterfall Viewer -->
+        <section class="panel panel-sonar" aria-labelledby="sonar-heading">
+          <div class="panel-header">
+            <h2 id="sonar-heading">ACOUSTIC WATERFALL SCANNER</h2>
+            <div class="panel-header-badges">
+              <span class="badge-provenance prov-simulated" title="Waterfall imagery simulated or playback data">PROVENANCE: SIMULATED</span>
+              <span id="scan-timer" class="panel-tag">STANDBY</span>
+            </div>
+          </div>
+          <div class="sonar-display-area" id="sonar-display-area">
+            <div class="image-wrapper" id="image-wrapper">
+              <img id="annotated-image" src="" alt="Acoustic Sonar Feed" style="display:none;" />
+              <div id="interactive-overlay-container" class="interactive-overlay-container"></div>
+              <div id="sonar-placeholder" class="sonar-placeholder">
+                <div class="scanner-sweep" aria-hidden="true"></div>
+                <p>SELECT A SAMPLE OR UPLOAD RAW SIDE-SCAN SONAR STRIP TO BEGIN ACOUSTIC PROCESSING</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. Detection & Track Inspector Panel (Section 4, 5, 6, 7, 11) -->
+        <section class="panel panel-inspector" id="panel-inspector" aria-labelledby="inspector-heading">
+          <div class="panel-header">
+            <h2 id="inspector-heading">DETECTION &amp; TRACK INSPECTOR</h2>
+            <span id="inspector-track-badge" class="panel-tag">NO CONTACT SELECTED</span>
+          </div>
+          <div class="inspector-content" id="inspector-content">
+            <div id="inspector-empty" class="empty-state">
+              <p>Click on any bounding box above or select an anomaly from the table below to inspect its multi-ping history, confidence trajectory, and measurement provenance.</p>
+            </div>
+            <div id="inspector-details" style="display: none;">
+              <!-- Contact Summary Grid -->
+              <div class="inspector-summary-grid">
+                <div class="inspector-field">
+                  <span class="field-label">TRACK ID:</span>
+                  <span id="insp-track-id" class="field-val font-mono cyan-text">--</span>
+                </div>
+                <div class="inspector-field">
+                  <span class="field-label">CLASSIFICATION:</span>
+                  <span id="insp-class" class="field-val font-bold">--</span>
+                </div>
+                <div class="inspector-field">
+                  <span class="field-label">PERSISTENCE STATUS:</span>
+                  <span id="insp-status-badge" class="status-badge">--</span>
+                </div>
+                <div class="inspector-field">
+                  <span class="field-label">OBSERVATIONS:</span>
+                  <span id="insp-obs-count" class="field-val font-mono">--</span>
+                </div>
+                <div class="inspector-field">
+                  <span class="field-label">TRACK AGE:</span>
+                  <span id="insp-track-age" class="field-val font-mono">--</span>
+                </div>
+                <div class="inspector-field">
+                  <span class="field-label">FIRST SEEN:</span>
+                  <span id="insp-first-seen" class="field-val font-mono font-small">--</span>
+                </div>
+                <div class="inspector-field">
+                  <span class="field-label">LAST SEEN:</span>
+                  <span id="insp-last-seen" class="field-val font-mono font-small">--</span>
+                </div>
+                <div class="inspector-field">
+                  <span class="field-label">CURRENT CONFIDENCE:</span>
+                  <span id="insp-current-conf" class="field-val font-mono font-bold">--</span>
+                </div>
+              </div>
+
+              <!-- Confidence History Sparkline (Section 5) -->
+              <div class="sparkline-section">
+                <div class="sparkline-header">
+                  <span class="sparkline-label">CONFIDENCE TRAJECTORY ACROSS OBSERVATIONS:</span>
+                  <span id="sparkline-values" class="sparkline-values font-mono font-small">--</span>
+                </div>
+                <div class="sparkline-container" id="sparkline-container">
+                  <svg id="confidence-sparkline" width="100%" height="45" aria-label="Confidence history chart"></svg>
+                </div>
+              </div>
+
+              <!-- Measurement Provenance Matrix (Section 7) -->
+              <div class="provenance-section">
+                <h4 class="section-title">MEASUREMENT PROVENANCE BREAKDOWN</h4>
+                <div class="provenance-grid">
+                  <div class="prov-row">
+                    <span class="prov-name">Seabed Elevation:</span>
+                    <span id="prov-elevation" class="prov-val font-mono">--</span>
+                    <span class="prov-tag prov-derived" title="Calculated from acoustic shadow length and altitude geometry">DERIVED</span>
+                  </div>
+                  <div class="prov-row">
+                    <span class="prov-name">Target Depth:</span>
+                    <span id="prov-depth" class="prov-val font-mono">--</span>
+                    <span class="prov-tag prov-derived" title="Computed from bathymetry and vehicle depth sensors">DERIVED</span>
+                  </div>
+                  <div class="prov-row">
+                    <span class="prov-name">GPS Position:</span>
+                    <span id="prov-gps" class="prov-val font-mono">--</span>
+                    <span id="prov-gps-badge" class="prov-tag prov-demo" title="Simulated benchmark navigation coordinates">DEMO</span>
+                  </div>
+                  <div class="prov-row">
+                    <span class="prov-name">Acoustic Shadow:</span>
+                    <span id="prov-shadow" class="prov-val font-mono">--</span>
+                    <span class="prov-tag prov-measured" title="Extracted directly from side-scan waterfall pixel intensities">MEASURED</span>
+                  </div>
+                  <div class="prov-row">
+                    <span class="prov-name">Sonar Altitude:</span>
+                    <span id="prov-altitude" class="prov-val font-mono">12.0 m</span>
+                    <span class="prov-tag prov-assumed" title="Assumed nominal flight envelope">ASSUMED</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Operator Track Controls (Section 11) -->
+              <div class="track-controls-section">
+                <h4 class="section-title">OPERATOR TRACK ACTIONS (AUDITED)</h4>
+                <div class="controls-btn-group">
+                  <button id="btn-confirm-contact" class="btn-action btn-confirm" title="Operator confirms this track for mission recovery workflow. Does NOT rewrite ML ground truth.">
+                    ✓ Confirm Contact
+                  </button>
+                  <button id="btn-dismiss-contact" class="btn-action btn-dismiss" title="Dismiss contact as transient/spurious acoustic return.">
+                    ✕ Dismiss Transient
+                  </button>
+                  <button id="btn-toggle-vis" class="btn-action btn-toggle-vis" title="Toggle visibility of this track overlay.">
+                    👁 Toggle Visibility
+                  </button>
+                </div>
+                <div id="track-audit-log" class="audit-log-container">
+                  <span class="audit-title">AUDIT TRAIL:</span>
+                  <ul id="audit-log-entries" class="audit-list">
+                    <li class="font-small font-mono text-muted">No operator overrides recorded.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. Mission Event Timeline (Section 10) -->
+        <section class="panel panel-timeline" id="panel-timeline" aria-labelledby="timeline-heading">
+          <div class="panel-header">
+            <h2 id="timeline-heading">MISSION EVENT TIMELINE</h2>
+            <button id="btn-clear-timeline" class="btn-clear-timeline" title="Clear event history">CLEAR</button>
+          </div>
+          <div class="timeline-container" id="timeline-container">
+            <div id="timeline-empty" class="empty-state">
+              <p>Awaiting acoustic survey scans to record temporal event timeline...</p>
+            </div>
+            <ul id="timeline-list" class="timeline-list" style="display: none;"></ul>
+          </div>
+        </section>
+      </div>
+
+      <!-- Right Column: System 1 Reflex, System 2 Tactical Reasoning, GIS Map, Clearance Table -->
+      <div class="cockpit-right-col">
+        <!-- Sub-panel 1: System-1 Laya Reflex Autopilot (Section 8) -->
+        <section class="hud-box reflex-box" aria-labelledby="system1-heading">
+          <div class="hud-box-header">
+            <h3 id="system1-heading">SYSTEM 1: <span id="system1-engine-tag" class="badge-laya">ENGINE: LAYA</span></h3>
+            <span id="system1-status-tag" class="status-pill status-active">ACTIVE</span>
+            <span id="latency-tag" class="latency-pill">-- ms</span>
+          </div>
+          <div class="reflex-content">
+            <div class="reflex-decision-row">
+              <span class="reflex-title">DECISION:</span>
+              <span id="decision-primitive" class="decision-badge badge-nominal">NOMINAL_CRUISE</span>
+            </div>
+            <div class="system1-meta-row">
+              <span>EVIDENCE QUALITY: <strong id="system1-evidence-tag" class="cyan-text">--</strong></span>
+              <span>OPERATOR REVIEW: <strong id="system1-review-tag" class="green-text">NO</strong></span>
+            </div>
+            <p id="recommended-maneuver" class="maneuver-desc">AUV thrusters operating under nominal bathymetric navigation plan.</p>
+            <div class="hazard-bar-container">
+              <div class="hazard-header">
+                <span>SEABED HAZARD SEVERITY:</span>
+                <span id="hazard-score" class="hazard-num">0.0 / 10.0</span>
+              </div>
+              <div class="progress-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="10"><div id="hazard-progress" class="progress-fill" style="width: 0%;"></div></div>
+            </div>
+            <div class="system1-advisory-disclaimer">
+              Advisory only — no direct vehicle control.
+            </div>
+          </div>
+        </section>
+
+        <!-- Sub-panel 2: System-2 Groq Tactical Reasoning (Section 9) -->
+        <section class="hud-box system2-box" aria-labelledby="system2-heading">
+          <div class="hud-box-header">
+            <h3 id="system2-heading">SYSTEM 2: <span id="system2-engine-tag" class="badge-groq">ENGINE: GROQ (LLaMA-3.3)</span></h3>
+            <span id="system2-status-tag" class="status-pill status-active">ACTIVE</span>
+            <span id="system2-latency-tag" class="latency-pill">-- ms</span>
+          </div>
+          <div class="system2-content">
+            <div class="s2-block">
+              <span class="s2-title">TACTICAL INCIDENT SUMMARY:</span>
+              <p id="system2-summary" class="s2-desc">Awaiting mission context...</p>
+            </div>
+            <div class="s2-block">
+              <span class="s2-title s2-orange">OBSERVED EVIDENCE &amp; UNCERTAINTIES:</span>
+              <ul id="system2-uncertainties" class="s2-list">
+                <li>No active sensor uncertainties logged.</li>
+              </ul>
+            </div>
+            <div class="s2-block">
+              <span class="s2-title s2-cyan">OPERATOR ACTION &amp; RECOVERY:</span>
+              <p id="system2-action" class="s2-desc">Nominal survey transect.</p>
+            </div>
+            <!-- Interactive Operator Q&A -->
+            <div class="system2-qa-box">
+              <span class="s2-title">OPERATOR FORENSIC Q&amp;A:</span>
+              <div class="qa-input-row">
+                <input id="system2-qa-input" type="text" placeholder="Ask System 2 about this sonar contact or temporal trail..." aria-label="Question for System 2" />
+                <button id="system2-qa-btn" aria-label="Ask question">ASK</button>
+              </div>
+              <p id="system2-qa-answer" class="qa-answer-box" style="display: none;"></p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Sub-panel 3: Interactive Marine GIS & Track Breadcrumbs (Section 6, 16) -->
+        <section class="hud-box map-box" aria-labelledby="gis-heading">
+          <div class="hud-box-header">
+            <h3 id="gis-heading">MARITIME GIS &amp; GEOREFERENCING</h3>
+            <div class="map-header-right">
+              <span class="prov-tag" id="map-prov-tag">UNAVAILABLE</span>
+              <span class="map-coordinates" id="gps-coords">GPS: UNAVAILABLE</span>
+            </div>
+          </div>
+          <div id="gps-unavailable-banner" class="gps-unavailable-banner" style="display: none;">
+            ⚠️ GPS unavailable — image-space tracking only. No geographic positions fabricated.
+          </div>
+          <div id="leaflet-map" class="marine-map" role="application" aria-label="Acoustic Sonar Map"></div>
+        </section>
+
+        <!-- Sub-panel 4: Tactical Target Clearance & Dispatch (Section 17) -->
+        <section class="hud-box dispatch-box" aria-labelledby="dispatch-heading">
+          <div class="hud-box-header">
+            <h3 id="dispatch-heading">TACTICAL CLEARANCE SPECIFICATION</h3>
+            <button id="download-pdf-btn" class="dispatch-pdf-btn" disabled title="Generate official Operation Net-Zero PDF dispatch report">
+              <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
+              GENERATE MISSION REPORT (PDF)
+            </button>
+          </div>
+          <div class="target-specs-table-wrapper">
+            <table class="specs-table" aria-label="Acoustic Anomalies List">
+              <thead>
+                <tr>
+                  <th scope="col">ID</th>
+                  <th scope="col">CLASSIFICATION</th>
+                  <th scope="col">PERSISTENCE</th>
+                  <th scope="col">CONFIDENCE</th>
+                  <th scope="col">ELEVATION</th>
+                  <th scope="col">DEPTH</th>
+                  <th scope="col">STATUS</th>
+                </tr>
+              </thead>
+              <tbody id="specs-tbody">
+                <tr><td colspan="7" class="empty-state">No anomalies detected yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- Leaflet JS & App Script -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

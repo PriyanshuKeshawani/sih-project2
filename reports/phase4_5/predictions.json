@@ -1,0 +1,571 @@
+[
+  {
+    "image": "bg_1693569243.750_x2500.jpg",
+    "detections": []
+  },
+  {
+    "image": "bg_1693569262.760_x0.jpg",
+    "detections": []
+  },
+  {
+    "image": "bg_1693569286.759_x3000.jpg",
+    "detections": []
+  },
+  {
+    "image": "bg_1693569352.770_x4000.jpg",
+    "detections": []
+  },
+  {
+    "image": "bg_1693569414.790_x500.jpg",
+    "detections": []
+  },
+  {
+    "image": "bg_1693569431.789_x2500.jpg",
+    "detections": []
+  },
+  {
+    "image": "synth_ghost_net_00001.png",
+    "detections": [
+      {
+        "class_id": 3,
+        "class": "ghost_net",
+        "confidence": 0.929,
+        "box": {
+          "x": 114,
+          "y": 210,
+          "w": 115,
+          "h": 109
+        },
+        "bbox_xyxy": [
+          114,
+          210,
+          229,
+          319
+        ],
+        "tile_id": "tile_000",
+        "source_width": 640,
+        "source_height": 640
+      }
+    ]
+  },
+  {
+    "image": "synth_ghost_net_00002.png",
+    "detections": [
+      {
+        "class_id": 3,
+        "class": "ghost_net",
+        "confidence": 0.933,
+        "box": {
+          "x": 382,
+          "y": 212,
+          "w": 124,
+          "h": 148
+        },
+        "bbox_xyxy": [
+          382,
+          212,
+          506,
+          360
+        ],
+        "tile_id": "tile_000",
+        "source_width": 640,
+        "source_height": 640
+      }
+    ]
+  },
+  {
+    "image": "synth_ghost_net_00003.png",
+    "detections": [
+      {
+        "class_id": 3,
+        "class": "ghost_net",
+        "confidence": 0.892,
+        "box": {
+          "x": 327,
+          "y": 324,
+          "w": 82,
+          "h": 142
+        },
+        "bbox_xyxy": [
+          327,
+          324,
+          409,
+          466
+        ],
+        "tile_id": "tile_000",
+        "source_width": 640,
+        "source_height": 640
+      }
+    ]
+  },
+  {
+    "image": "pipe_1693569383.780_x3500.jpg",
+    "detections": [
+      {
+        "class_id": 1,
+        "class": "submarine_pipeline",
+        "confidence": 0.645,
+        "box": {
+          "x": 119,
+          "y": 0,
+          "w": 399,
+          "h": 266
+        },
+        "bbox_xyxy": [
+          119,
+          0,
+          518,
+          266
+        ],
+        "tile_id": "tile_000",
+        "source_width": 640,
+        "source_height": 500
+      }
+    ]
+  },
+  {
+    "image": "pipe_1693569385.780_x3500.jpg",
+    "detections": [
+      {
+        "class_id": 1,
+        "class": "submarine_pipeline",
+        "confidence": 0.726,
+        "box": {
+          "x": 108,
+          "y": 0,
+          "w": 420,
+          "h": 304
+        },
+        "bbox_xyxy": [
+          108,
+          0,
+          528,
+          304
+        ],
+        "tile_id": "tile_000",
+        "source_width": 640,
+        "source_height": 500
+      }
+    ]
+  },
+  {
+    "image": "pipe_1693569399.779_x1500.jpg",
+    "detections": [
+      {
+        "class_id": 1,
+        "class": "submarine_pipeline",
+        "confidence": 0.83,
+        "box": {
+          "x": 185,
+          "y": 0,
+          "w": 353,
+          "h": 497
+        },
+        "bbox_xyxy": [
+          185,
+          0,
+          538,
+          497
+        ],
+        "tile_id": "tile_000",
+        "source_width": 640,
+        "source_height": 500
+      }
+    ]
+  },
+  {
+    "image": "wreckR_ship-081_png.rf.6cf386b75ddb8ead86c0453021279296.jpg",
+    "detections": [
+      {
+        "class_id": 2,
+        "class": "shipwreck",
+        "confidence": 0.845,
+        "box": {
+          "x": 17,
+          "y": 25,
+          "w": 251,
+          "h": 459
+        },
+        "bbox_xyxy": [
+          17,
+          25,
+          268,
+          484
+        ],
+        "tile_id": "tile_000",
+        "source_width": 489,
+        "source_height": 525
+      }
+    ]
+  },
+  {
+    "image": "wreckA_Artificial_Reef_06_y1280_x0.jpg",
+    "detections": [
+      {
+        "class_id": 2,
+        "class": "shipwreck",
+        "confidence": 0.861,
+        "box": {
+          "x": 473,
+          "y": 9,
+          "w": 167,
+          "h": 142
+        },
+        "bbox_xyxy": [
+          473,
+          9,
+          640,
+          151
+        ],
+        "tile_id": "tile_000",
+        "source_width": 640,
+        "source_height": 640
+      }
+    ]
+  },
+  {
+    "image": "wreckA_Artificial_Reef_06_y1280_x320.jpg",
+    "detections": [
+      {
+        "class_id": 2,
+        "class": "shipwreck",
+        "confidence": 0.858,
+        "box": {
+          "x": 153,
+          "y": 0,
+          "w": 271,
+          "h": 148
+        },
+        "bbox_xyxy": [
+          153,
+          0,
+          424,
+          148
+        ],
+        "tile_id": "tile_000",
+        "source_width": 640,
+        "source_height": 640
+      }
+    ]
+  },
+  {
+    "image": "wreckA_Artificial_Reef_06_y1280_x640.jpg",
+    "detections": [
+      {
+        "class_id": 2,
+        "class": "shipwreck",
+        "confidence": 0.521,
+        "box": {
+          "x": 407,
+          "y": 492,
+          "w": 12,
+          "h": 28
+        },
+        "bbox_xyxy": [
+          407,
+          492,
+          419,
+          520
+        ],
+        "tile_id": "tile_000",
+        "source_width": 640,
+        "source_height": 640
+      },
+      {
+        "class_id": 2,
+        "class": "shipwreck",
+        "confidence": 0.476,
+        "box": {
+          "x": 0,
+          "y": 0,
+          "w": 104,
+          "h": 87
+        },
+        "bbox_xyxy": [
+          0,
+          0,
+          104,
+          87
+        ],
+        "tile_id": "tile_000",
+        "source_width": 640,
+        "source_height": 640
+      },
+      {
+        "class_id": 2,
+        "class": "shipwreck",
+        "confidence": 0.322,
+        "box": {
+          "x": 1,
+          "y": 180,
+          "w": 36,
+          "h": 25
+        },
+        "bbox_xyxy": [
+          1,
+          180,
+          37,
+          205
+        ],
+        "tile_id": "tile_000",
+        "source_width": 640,
+        "source_height": 640
+      },
+      {
+        "class_id": 2,
+        "class": "shipwreck",
+        "confidence": 0.224,
+        "box": {
+          "x": 430,
+          "y": 616,
+          "w": 83,
+          "h": 24
+        },
+        "bbox_xyxy": [
+          430,
+          616,
+          513,
+          640
+        ],
+        "tile_id": "tile_000",
+        "source_width": 640,
+        "source_height": 640
+      }
+    ]
+  },
+  {
+    "image": "mine_0001_2015.jpg",
+    "detections": [
+      {
+        "class_id": 4,
+        "class": "mine_cylinder",
+        "confidence": 0.551,
+        "box": {
+          "x": 406,
+          "y": 428,
+          "w": 55,
+          "h": 56
+        },
+        "bbox_xyxy": [
+          406,
+          428,
+          461,
+          484
+        ],
+        "tile_id": "tile_003",
+        "source_width": 1024,
+        "source_height": 1024
+      },
+      {
+        "class_id": 4,
+        "class": "mine_cylinder",
+        "confidence": 0.517,
+        "box": {
+          "x": 438,
+          "y": 317,
+          "w": 25,
+          "h": 17
+        },
+        "bbox_xyxy": [
+          438,
+          317,
+          463,
+          334
+        ],
+        "tile_id": "tile_001",
+        "source_width": 1024,
+        "source_height": 1024
+      },
+      {
+        "class_id": 2,
+        "class": "shipwreck",
+        "confidence": 0.457,
+        "box": {
+          "x": 739,
+          "y": 10,
+          "w": 42,
+          "h": 27
+        },
+        "bbox_xyxy": [
+          739,
+          10,
+          781,
+          37
+        ],
+        "tile_id": "tile_001",
+        "source_width": 1024,
+        "source_height": 1024
+      },
+      {
+        "class_id": 2,
+        "class": "shipwreck",
+        "confidence": 0.37,
+        "box": {
+          "x": 84,
+          "y": 615,
+          "w": 42,
+          "h": 25
+        },
+        "bbox_xyxy": [
+          84,
+          615,
+          126,
+          640
+        ],
+        "tile_id": "tile_000",
+        "source_width": 1024,
+        "source_height": 1024
+      },
+      {
+        "class_id": 4,
+        "class": "mine_cylinder",
+        "confidence": 0.272,
+        "box": {
+          "x": 586,
+          "y": 711,
+          "w": 25,
+          "h": 20
+        },
+        "bbox_xyxy": [
+          586,
+          711,
+          611,
+          731
+        ],
+        "tile_id": "tile_002",
+        "source_width": 1024,
+        "source_height": 1024
+      }
+    ]
+  },
+  {
+    "image": "mine_0003_2015.jpg",
+    "detections": [
+      {
+        "class_id": 4,
+        "class": "mine_cylinder",
+        "confidence": 0.558,
+        "box": {
+          "x": 945,
+          "y": 403,
+          "w": 41,
+          "h": 21
+        },
+        "bbox_xyxy": [
+          945,
+          403,
+          986,
+          424
+        ],
+        "tile_id": "tile_003",
+        "source_width": 1024,
+        "source_height": 1024
+      },
+      {
+        "class_id": 4,
+        "class": "mine_cylinder",
+        "confidence": 0.445,
+        "box": {
+          "x": 914,
+          "y": 147,
+          "w": 52,
+          "h": 35
+        },
+        "bbox_xyxy": [
+          914,
+          147,
+          966,
+          182
+        ],
+        "tile_id": "tile_001",
+        "source_width": 1024,
+        "source_height": 1024
+      },
+      {
+        "class_id": 4,
+        "class": "mine_cylinder",
+        "confidence": 0.422,
+        "box": {
+          "x": 599,
+          "y": 852,
+          "w": 32,
+          "h": 28
+        },
+        "bbox_xyxy": [
+          599,
+          852,
+          631,
+          880
+        ],
+        "tile_id": "tile_002",
+        "source_width": 1024,
+        "source_height": 1024
+      },
+      {
+        "class_id": 4,
+        "class": "mine_cylinder",
+        "confidence": 0.421,
+        "box": {
+          "x": 384,
+          "y": 474,
+          "w": 22,
+          "h": 28
+        },
+        "bbox_xyxy": [
+          384,
+          474,
+          406,
+          502
+        ],
+        "tile_id": "tile_001",
+        "source_width": 1024,
+        "source_height": 1024
+      },
+      {
+        "class_id": 4,
+        "class": "mine_cylinder",
+        "confidence": 0.153,
+        "box": {
+          "x": 81,
+          "y": 55,
+          "w": 36,
+          "h": 20
+        },
+        "bbox_xyxy": [
+          81,
+          55,
+          117,
+          75
+        ],
+        "tile_id": "tile_000",
+        "source_width": 1024,
+        "source_height": 1024
+      }
+    ]
+  },
+  {
+    "image": "mine_0003_2021.jpg",
+    "detections": [
+      {
+        "class_id": 4,
+        "class": "mine_cylinder",
+        "confidence": 0.6,
+        "box": {
+          "x": 262,
+          "y": 105,
+          "w": 17,
+          "h": 16
+        },
+        "bbox_xyxy": [
+          262,
+          105,
+          279,
+          121
+        ],
+        "tile_id": "tile_000",
+        "source_width": 416,
+        "source_height": 416
+      }
+    ]
+  }
+]

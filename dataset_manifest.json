@@ -1,0 +1,164 @@
+{
+  "manifest_version": "2.0.0",
+  "generated_at": "2026-09-26T18:55:00Z",
+  "provenance_standard": "SIH 2026 PS 26057 Scientific Validation Integrity",
+  "categories_summary": {
+    "category_A_downloaded_and_tested": 4,
+    "category_B_referenced_not_tested": 3,
+    "category_C_restricted_unavailable": 2
+  },
+  "datasets": [
+    {
+      "source": "DRISHTI SSS (Test Subset)",
+      "validation_category": "A_DOWNLOADED_AND_TESTED",
+      "url": "https://huggingface.co/datasets/rehan9599/drishti-sss",
+      "license": "CC-BY-SA-4.0",
+      "redistribution_allowed": true,
+      "number_of_files": 6,
+      "file_types": [".jpg", ".png"],
+      "annotation_availability": "Synthetic net has procedural GT box. Mine and background samples lack verified bounding box annotations in local split.",
+      "class_mapping": {
+        "1": "submarine_pipeline",
+        "2": "shipwreck",
+        "3": "ghost_net",
+        "4": "mine_cylinder"
+      },
+      "provenance": "Curated test subset downloaded from HuggingFace repository rehan9599/drishti-sss.",
+      "sample_files": [
+        "data/samples/bg_1693569243.750_x2500.jpg",
+        "data/samples/synth_ghost_net_00001.png",
+        "data/samples/mine_0001_2015.jpg",
+        "data/downloaded/bg_1693569368.779_x1000.jpg",
+        "data/downloaded/mine_0009_2015.jpg"
+      ],
+      "validation_notes": "Tested in replay pipeline. Synthetic net validated against GT box. Background validated against empty GT. Mine cylinder detected with one co-located shipwreck false positive."
+    },
+    {
+      "source": "NOAA Ocean Exploration (Georeferenced Swath)",
+      "validation_category": "A_DOWNLOADED_AND_TESTED",
+      "url": "https://oceanexplorer.noaa.gov/multimedia/georeferenced-side-scan-sonar-image/",
+      "license": "U.S. Public Domain / NOAA Open Data Policy",
+      "redistribution_allowed": true,
+      "number_of_files": 1,
+      "file_types": [".png"],
+      "annotation_availability": "Geological seabed context only. No object bounding boxes (natural seabed geology).",
+      "class_mapping": {
+        "non_taxonomy": "seafloor_geology_and_acoustic_backscatter"
+      },
+      "provenance": "NOAA Office of Ocean Exploration and Research, public educational and scientific archive.",
+      "sample_files": [
+        "data/downloaded/noaa_fig2_sidescan.png"
+      ],
+      "validation_notes": "Tested in replay pipeline. 5-class detector hallucinated shipwreck (0.80) and ghost net (0.73) on natural benthic geology. Confirms absence of open-set unknown-object rejection."
+    },
+    {
+      "source": "SubPipe (Local Slices)",
+      "validation_category": "A_DOWNLOADED_AND_TESTED",
+      "url": "https://github.com/remaro-network/SubPipe-dataset",
+      "license": "CC-BY-4.0",
+      "redistribution_allowed": true,
+      "number_of_files": 4,
+      "file_types": [".jpg"],
+      "annotation_availability": "Local slices lack verified bounding box label files (.txt / .xml / .json) in repository.",
+      "class_mapping": {
+        "1": "submarine_pipeline",
+        "negative": "clean_background_seabed"
+      },
+      "provenance": "Alvarez-Tuñon et al. SubPipe: Submarine pipeline inspection dataset for segmentation and visual-inertial localization.",
+      "sample_files": [
+        "data/samples/pipe_1693569383.780_x3500.jpg",
+        "sample_sonar_data/positives/test/images/pipe_1693569383.780_x3500.jpg"
+      ],
+      "validation_notes": "Pipeline execution passes. Detection outputs contact at conf 0.65. Without verified GT annotations on disk, IoU accuracy cannot be validated (marked NOT_EVALUATED for scientific metric)."
+    },
+    {
+      "source": "AI4Shipwrecks (Local Slices)",
+      "validation_category": "A_DOWNLOADED_AND_TESTED",
+      "url": "https://umfieldrobotics.github.io/ai4shipwrecks/",
+      "license": "CC-BY-4.0",
+      "redistribution_allowed": true,
+      "number_of_files": 3,
+      "file_types": [".jpg"],
+      "annotation_availability": "Local slices lack verified bounding box label files in repository.",
+      "class_mapping": {
+        "2": "shipwreck"
+      },
+      "provenance": "Sethuraman et al., UM Field Robotics / NOAA Thunder Bay Sanctuary.",
+      "sample_files": [
+        "data/samples/wreckA_Artificial_Reef_06_y1280_x0.jpg",
+        "sample_sonar_data/positives/test/images/wreckA_Artificial_Reef_06_y1280_x320.jpg"
+      ],
+      "validation_notes": "Pipeline execution passes. Shipwreck contact detected at conf 0.86. Formal IoU evaluation marked NOT_EVALUATED due to absent GT annotation files."
+    },
+    {
+      "source": "SubPipe (Full Upstream Dataset)",
+      "validation_category": "B_REFERENCED_NOT_TESTED",
+      "url": "https://github.com/remaro-network/SubPipe-dataset",
+      "license": "CC-BY-4.0",
+      "redistribution_allowed": true,
+      "number_of_files": 0,
+      "file_types": [".bag", ".tar.gz"],
+      "annotation_availability": "Upstream pixel segmentation masks.",
+      "class_mapping": {"1": "submarine_pipeline"},
+      "provenance": "Upstream 100+ GB raw ROS bags and full survey tarballs referenced in bibliography.",
+      "sample_files": [],
+      "validation_notes": "Not downloaded or tested locally due to repository storage constraints. Zero accuracy claims made."
+    },
+    {
+      "source": "AI4Shipwrecks (Full DeepBlue Archive)",
+      "validation_category": "B_REFERENCED_NOT_TESTED",
+      "url": "https://umfieldrobotics.github.io/ai4shipwrecks/",
+      "license": "CC-BY-4.0",
+      "redistribution_allowed": true,
+      "number_of_files": 0,
+      "file_types": [".zip"],
+      "annotation_availability": "Upstream spatial coordinates in Deep Blue data repository 8623hz41x.",
+      "class_mapping": {"2": "shipwreck"},
+      "provenance": "Full multi-gigabyte survey archive referenced in documentation.",
+      "sample_files": [],
+      "validation_notes": "Not downloaded in full. Only sample slices tested. Zero accuracy claims made on full archive."
+    },
+    {
+      "source": "DRISHTI SSS (Full Training Split on HuggingFace)",
+      "validation_category": "B_REFERENCED_NOT_TESTED",
+      "url": "https://huggingface.co/datasets/rehan9599/drishti-sss",
+      "license": "CC-BY-SA-4.0",
+      "redistribution_allowed": true,
+      "number_of_files": 0,
+      "file_types": [".parquet", ".tar"],
+      "annotation_availability": "Upstream YOLO annotations.",
+      "class_mapping": {"1": "pipeline", "2": "shipwreck", "3": "ghost_net", "4": "mine_cylinder"},
+      "provenance": "Full multi-gigabyte HuggingFace dataset split.",
+      "sample_files": [],
+      "validation_notes": "Only a targeted 6-file test subset was downloaded and tested. Full training split is referenced only."
+    },
+    {
+      "source": "DRISHTI SSS Class 0: Crab Pot",
+      "validation_category": "C_RESTRICTED_UNAVAILABLE",
+      "url": "https://huggingface.co/datasets/rehan9599/drishti-sss",
+      "license": "Proprietary / Gated Upstream",
+      "redistribution_allowed": false,
+      "number_of_files": 0,
+      "file_types": [],
+      "annotation_availability": "Unavailable in open public release.",
+      "class_mapping": {"0": "crab_pot"},
+      "provenance": "Class 0 index in YOLO weights exists, but upstream author gated or excluded crab pot imagery.",
+      "sample_files": [],
+      "validation_notes": "Cannot be evaluated. Marked RESTRICTED / UNAVAILABLE. Any test claiming crab pot accuracy is invalid."
+    },
+    {
+      "source": "Proprietary Military / Commercial Hydrographic SSS Datasets",
+      "validation_category": "C_RESTRICTED_UNAVAILABLE",
+      "url": "N/A",
+      "license": "Classified / Proprietary",
+      "redistribution_allowed": false,
+      "number_of_files": 0,
+      "file_types": [],
+      "annotation_availability": "Restricted.",
+      "class_mapping": {},
+      "provenance": "Real naval mine countermeasures (MCM) sonar data.",
+      "sample_files": [],
+      "validation_notes": "Not available to open-source SIH competition team. Replaced with synthetic and open academic benchmarks."
+    }
+  ]
+}

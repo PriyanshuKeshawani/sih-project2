@@ -1,0 +1,7 @@
+image_name,false_detections_count,shipwreck_fps,highest_false_conf,avg_false_conf,false_classes
+bg_1693569243.750_x2500.jpg,0,0,0.0,0.0,NONE
+bg_1693569262.760_x0.jpg,0,0,0.0,0.0,NONE
+bg_1693569286.759_x3000.jpg,0,0,0.0,0.0,NONE
+bg_1693569352.770_x4000.jpg,0,0,0.0,0.0,NONE
+bg_1693569414.790_x500.jpg,0,0,0.0,0.0,NONE
+bg_1693569431.789_x2500.jpg,0,0,0.0,0.0,NONE

@@ -1,0 +1,360 @@
+{
+  "scenarios": {
+    "Scenario A": {
+      "status": "COMPLETED",
+      "dataset_name": "SubPipe / DRISHTI SSS",
+      "license": "CC-BY-4.0",
+      "image_filename": "bg_1693569243.750_x2500.jpg",
+      "detections_count": 0,
+      "primary_class": "clean_seabed",
+      "system1_primitive": "PASSIVE_LOG",
+      "system1_hazard": 1.0,
+      "system2_type": "network_groq",
+      "system2_priority": "ROUTINE",
+      "total_ms": 1408.55
+    },
+    "Scenario B": {
+      "status": "COMPLETED",
+      "dataset_name": "DRISHTI SSS Synthetic Split",
+      "license": "CC-BY-SA-4.0",
+      "image_filename": "synth_ghost_net_00001.png",
+      "detections_count": 1,
+      "primary_class": "ghost_net",
+      "system1_primitive": "EMERGENCY_PROP_HAZARD",
+      "system1_hazard": 8.5,
+      "system2_type": "deterministic_fallback",
+      "system2_priority": "CRITICAL",
+      "total_ms": 3573.75
+    },
+    "Scenario C": {
+      "status": "COMPLETED",
+      "dataset_name": "AI4Shipwrecks",
+      "license": "CC-BY-4.0",
+      "image_filename": "wreckA_Artificial_Reef_06_y1280_x0.jpg",
+      "detections_count": 1,
+      "primary_class": "shipwreck",
+      "system1_primitive": "PASSIVE_LOG",
+      "system1_hazard": 5.8,
+      "system2_type": "deterministic_fallback",
+      "system2_priority": "MODERATE",
+      "total_ms": 3166.95
+    },
+    "Scenario D": {
+      "status": "COMPLETED",
+      "dataset_name": "SubPipe",
+      "license": "CC-BY-4.0",
+      "image_filename": "pipe_1693569383.780_x3500.jpg",
+      "detections_count": 1,
+      "primary_class": "submarine_pipeline",
+      "system1_primitive": "PASSIVE_LOG",
+      "system1_hazard": 5.4,
+      "system2_type": "deterministic_fallback",
+      "system2_priority": "LOW",
+      "total_ms": 3400.81
+    },
+    "Scenario E": {
+      "status": "COMPLETED",
+      "dataset_name": "DRISHTI SSS (MILCO)",
+      "license": "CC-BY-SA-4.0",
+      "image_filename": "mine_0001_2015.jpg",
+      "detections_count": 3,
+      "primary_class": "mine_cylinder",
+      "system1_primitive": "LOITER_AND_RESCAN",
+      "system1_hazard": 6.5,
+      "system2_type": "network_groq",
+      "system2_priority": "HIGH",
+      "total_ms": 10992.28
+    },
+    "Scenario F": {
+      "status": "COMPLETED",
+      "dataset_name": "NOAA Ocean Exploration",
+      "license": "U.S. Public Domain",
+      "image_filename": "noaa_fig2_sidescan.png",
+      "detections_count": 2,
+      "primary_class": "shipwreck",
+      "system1_primitive": "PASSIVE_LOG",
+      "system1_hazard": 5.8,
+      "system2_type": "deterministic_fallback",
+      "system2_priority": "MODERATE",
+      "total_ms": 6304.41
+    },
+    "Scenario G": {
+      "status": "COMPLETED",
+      "dataset_name": "AI4Shipwrecks / DRISHTI SSS",
+      "license": "CC-BY-4.0",
+      "image_filename": "wreckA_Artificial_Reef_06_y1280_x320.jpg",
+      "detections_count": 1,
+      "primary_class": "shipwreck",
+      "system1_primitive": "PASSIVE_LOG",
+      "system1_hazard": 5.8,
+      "system2_type": "deterministic_fallback",
+      "system2_priority": "MODERATE",
+      "total_ms": 3367.54
+    }
+  },
+  "multi_ping_validation": {
+    "survey_id": "SURVEY_MULTI_5436C6",
+    "scenario_id": "Scenario B",
+    "dataset_name": "DRISHTI SSS Synthetic Split",
+    "total_pings": 3,
+    "ping_history": [
+      {
+        "ping_idx": 1,
+        "scan_id": "SCAN_01_C71E",
+        "observations": [
+          {
+            "class": "ghost_net",
+            "confidence": 0.929,
+            "box": {
+              "x": 114,
+              "y": 210,
+              "w": 115,
+              "h": 109
+            },
+            "bbox_xyxy": [
+              114,
+              210,
+              229,
+              319
+            ],
+            "elevation_m": 1.75,
+            "geo": {
+              "lat": 9.288274,
+              "lon": 79.132425,
+              "depth_m": 24.5,
+              "zone": "DEMO: Gulf of Mannar Dugong Sanctuary Sector 4",
+              "status": "DEMO",
+              "position_type": "OBJECT_POSITION"
+            },
+            "track_id": "TRK-234021",
+            "persistence_status": "NEW_CONTACT",
+            "observation_count": 1,
+            "track_age_s": 0.0
+          }
+        ]
+      },
+      {
+        "ping_idx": 2,
+        "scan_id": "SCAN_02_131E",
+        "observations": [
+          {
+            "class": "ghost_net",
+            "confidence": 0.929,
+            "box": {
+              "x": 114,
+              "y": 210,
+              "w": 115,
+              "h": 109
+            },
+            "bbox_xyxy": [
+              114,
+              210,
+              229,
+              319
+            ],
+            "elevation_m": 1.75,
+            "geo": {
+              "lat": 9.288274,
+              "lon": 79.132425,
+              "depth_m": 24.5,
+              "zone": "DEMO: Gulf of Mannar Dugong Sanctuary Sector 4",
+              "status": "DEMO",
+              "position_type": "OBJECT_POSITION"
+            },
+            "track_id": "TRK-234021",
+            "persistence_status": "NEW_CONTACT",
+            "observation_count": 2,
+            "track_age_s": 0.0
+          }
+        ]
+      },
+      {
+        "ping_idx": 3,
+        "scan_id": "SCAN_03_E41C",
+        "observations": [
+          {
+            "class": "ghost_net",
+            "confidence": 0.929,
+            "box": {
+              "x": 114,
+              "y": 210,
+              "w": 115,
+              "h": 109
+            },
+            "bbox_xyxy": [
+              114,
+              210,
+              229,
+              319
+            ],
+            "elevation_m": 1.75,
+            "geo": {
+              "lat": 9.288274,
+              "lon": 79.132425,
+              "depth_m": 24.5,
+              "zone": "DEMO: Gulf of Mannar Dugong Sanctuary Sector 4",
+              "status": "DEMO",
+              "position_type": "OBJECT_POSITION"
+            },
+            "track_id": "TRK-234021",
+            "persistence_status": "PERSISTENT",
+            "observation_count": 3,
+            "track_age_s": 0.0
+          }
+        ]
+      }
+    ],
+    "tracks": [
+      {
+        "track_id": "TRK-234021",
+        "survey_id": "SURVEY_MULTI_5436C6",
+        "class": "ghost_net",
+        "first_seen": "2026-09-26T13:07:55Z",
+        "last_seen": "2026-09-26T13:07:55Z",
+        "observation_count": 3,
+        "missed_scans": 1,
+        "confidence_history": [
+          0.929,
+          0.929,
+          0.929
+        ],
+        "positions": [
+          {
+            "lat": 9.288274,
+            "lon": 79.132425,
+            "depth_m": 24.5,
+            "zone": "DEMO: Gulf of Mannar Dugong Sanctuary Sector 4",
+            "status": "DEMO",
+            "position_type": "OBJECT_POSITION"
+          },
+          {
+            "lat": 9.288274,
+            "lon": 79.132425,
+            "depth_m": 24.5,
+            "zone": "DEMO: Gulf of Mannar Dugong Sanctuary Sector 4",
+            "status": "DEMO",
+            "position_type": "OBJECT_POSITION"
+          },
+          {
+            "lat": 9.288274,
+            "lon": 79.132425,
+            "depth_m": 24.5,
+            "zone": "DEMO: Gulf of Mannar Dugong Sanctuary Sector 4",
+            "status": "DEMO",
+            "position_type": "OBJECT_POSITION"
+          }
+        ],
+        "bbox_history": [
+          {
+            "x": 114,
+            "y": 210,
+            "w": 115,
+            "h": 109
+          },
+          {
+            "x": 114,
+            "y": 210,
+            "w": 115,
+            "h": 109
+          },
+          {
+            "x": 114,
+            "y": 210,
+            "w": 115,
+            "h": 109
+          }
+        ],
+        "physics_history": [],
+        "persistence_status": "PERSISTENT",
+        "track_age_s": 0.0,
+        "mean_confidence": 0.929,
+        "active": true,
+        "operator_status": "UNREVIEWED",
+        "audit_log": [],
+        "hidden": false
+      }
+    ]
+  },
+  "latency_benchmarks": {
+    "image_loading_ms": {
+      "count": 8,
+      "mean": 6.05,
+      "median": 5.3,
+      "p95": 12.26,
+      "max": 12.3,
+      "min": 1.74
+    },
+    "tiled_inference_ms": {
+      "count": 8,
+      "mean": 108.11,
+      "median": 107.0,
+      "p95": 116.25,
+      "max": 118.53,
+      "min": 101.59
+    },
+    "yolo_cpu_inference_ms": {
+      "count": 8,
+      "mean": 108.11,
+      "median": 107.0,
+      "p95": 116.25,
+      "max": 118.53,
+      "min": 101.59
+    },
+    "physics_geo_ms": {
+      "count": 8,
+      "mean": 0.04,
+      "median": 0.06,
+      "p95": 0.07,
+      "max": 0.08,
+      "min": 0.0
+    },
+    "laya_system1_ms": {
+      "count": 8,
+      "mean": 0.24,
+      "median": 0.3,
+      "p95": 0.39,
+      "max": 0.44,
+      "min": 0.0
+    },
+    "temporal_tracking_ms": {
+      "count": 8,
+      "mean": 0.14,
+      "median": 0.14,
+      "p95": 0.21,
+      "max": 0.22,
+      "min": 0.08
+    },
+    "system2_network_ms": {
+      "count": 0,
+      "mean": 0.0,
+      "median": 0.0,
+      "p95": 0.0,
+      "max": 0.0,
+      "min": 0.0
+    },
+    "system2_fallback_ms": {
+      "count": 8,
+      "mean": 304.51,
+      "median": 324.54,
+      "p95": 346.82,
+      "max": 348.83,
+      "min": 225.42
+    },
+    "pdf_generation_ms": {
+      "count": 8,
+      "mean": 29.0,
+      "median": 28.17,
+      "p95": 32.42,
+      "max": 33.82,
+      "min": 27.45
+    },
+    "total_mission_ms": {
+      "count": 8,
+      "mean": 448.23,
+      "median": 466.45,
+      "p95": 497.58,
+      "max": 501.94,
+      "min": 357.99
+    }
+  }
+}

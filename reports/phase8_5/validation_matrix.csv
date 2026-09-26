@@ -1,0 +1,8 @@
+dataset,image,ground_truth_available,target,detected,correct_class,correct_bbox,system1,system2,pdf,overall_status
+DRISHTI SSS / SubPipe,data/samples/bg_1693569243.750_x2500.jpg,TRUE,clean_seabed,0,TRUE,N/A,PASS (ALL_CLEAR),PASS (Bypassed),PASS,PASS
+DRISHTI SSS Synthetic Split,data/samples/synth_ghost_net_00001.png,TRUE,ghost_net,1,TRUE (ghost_net),TRUE (IoU=0.97),PASS (HAZARD_ALERT),PASS (Active/Fallback),PASS,PASS
+AI4Shipwrecks,data/samples/wreckA_Artificial_Reef_06_y1280_x0.jpg,FALSE,shipwreck,1,TRUE (shipwreck),NOT_EVALUATED,PASS (NAVIGATION_HAZARD),PASS (Active/Fallback),PASS,PARTIAL
+SubPipe,data/samples/pipe_1693569383.780_x3500.jpg,FALSE,submarine_pipeline,1,TRUE (submarine_pipeline),NOT_EVALUATED,PASS (PASSIVE_LOG),PASS (Active/Fallback),PASS,PARTIAL
+DRISHTI SSS (MILCO),data/samples/mine_0001_2015.jpg,FALSE,mine_cylinder,3,PARTIAL (Mine detected + 1 shipwreck FP),NOT_EVALUATED,PASS (EMERGENCY_SURFACE),PASS (Active/Fallback),PASS,PARTIAL
+NOAA Ocean Exploration,data/downloaded/noaa_fig2_sidescan.png,TRUE,non_taxonomy_geology,2,FALSE (Hallucinated shipwreck & ghost net),FALSE,FAIL (False safety reflex on geology),PASS (Briefing generated),PASS,FAIL
+AI4Shipwrecks / DRISHTI SSS,sample_sonar_data/positives/test/images/wreckA_Artificial_Reef_06_y1280_x320.jpg,FALSE,multi_contact,1,PARTIAL (Only 1 contact detected),NOT_EVALUATED,PASS (Handles single contact),PASS (Active/Fallback),PASS,PARTIAL

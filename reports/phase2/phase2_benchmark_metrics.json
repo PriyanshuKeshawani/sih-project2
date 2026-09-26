@@ -1,0 +1,211 @@
+[
+  {
+    "label": "Background",
+    "file": "data/samples/bg_1693569243.750_x2500.jpg",
+    "dimensions": "640x500",
+    "tile_count": 1,
+    "preprocess_ms": 119.37,
+    "inference_ms": 74.4,
+    "nms_postprocess_ms": 86.22,
+    "total_ms": 280.37,
+    "detection_count": 0,
+    "visual_artifact": "reports\\phase2\\verified_bg_1693569243_750_x2500_jpg.jpg",
+    "detections": []
+  },
+  {
+    "label": "Ghost Net",
+    "file": "data/samples/synth_ghost_net_00001.png",
+    "dimensions": "640x640",
+    "tile_count": 1,
+    "preprocess_ms": 10.43,
+    "inference_ms": 65.61,
+    "nms_postprocess_ms": 117.42,
+    "total_ms": 193.51,
+    "detection_count": 1,
+    "visual_artifact": "reports\\phase2\\verified_synth_ghost_net_00001_png.jpg",
+    "detections": [
+      {
+        "class_id": 3,
+        "class": "ghost_net",
+        "confidence": 0.929,
+        "box": {
+          "x": 114,
+          "y": 210,
+          "w": 115,
+          "h": 109
+        },
+        "bbox_xyxy": [
+          114,
+          210,
+          229,
+          319
+        ],
+        "tile_id": "tile_000",
+        "source_width": 640,
+        "source_height": 640
+      }
+    ]
+  },
+  {
+    "label": "Shipwreck",
+    "file": "data/samples/wreckR_ship-081_png.rf.6cf386b75ddb8ead86c0453021279296.jpg",
+    "dimensions": "489x525",
+    "tile_count": 1,
+    "preprocess_ms": 5.61,
+    "inference_ms": 67.67,
+    "nms_postprocess_ms": 75.04,
+    "total_ms": 148.69,
+    "detection_count": 1,
+    "visual_artifact": "reports\\phase2\\verified_wreckR_ship-081_png_rf_6cf386b75ddb8ead86c0453021279296_jpg.jpg",
+    "detections": [
+      {
+        "class_id": 2,
+        "class": "shipwreck",
+        "confidence": 0.845,
+        "box": {
+          "x": 17,
+          "y": 25,
+          "w": 251,
+          "h": 459
+        },
+        "bbox_xyxy": [
+          17,
+          25,
+          268,
+          484
+        ],
+        "tile_id": "tile_000",
+        "source_width": 489,
+        "source_height": 525
+      }
+    ]
+  },
+  {
+    "label": "Submarine Pipeline",
+    "file": "data/samples/pipe_1693569383.780_x3500.jpg",
+    "dimensions": "640x500",
+    "tile_count": 1,
+    "preprocess_ms": 10.75,
+    "inference_ms": 64.23,
+    "nms_postprocess_ms": 74.96,
+    "total_ms": 150.35,
+    "detection_count": 1,
+    "visual_artifact": "reports\\phase2\\verified_pipe_1693569383_780_x3500_jpg.jpg",
+    "detections": [
+      {
+        "class_id": 1,
+        "class": "submarine_pipeline",
+        "confidence": 0.645,
+        "box": {
+          "x": 119,
+          "y": 0,
+          "w": 399,
+          "h": 266
+        },
+        "bbox_xyxy": [
+          119,
+          0,
+          518,
+          266
+        ],
+        "tile_id": "tile_000",
+        "source_width": 640,
+        "source_height": 500
+      }
+    ]
+  },
+  {
+    "label": "Mine Cylinder (1024x1024 Large)",
+    "file": "data/samples/mine_0001_2015.jpg",
+    "dimensions": "1024x1024",
+    "tile_count": 4,
+    "preprocess_ms": 13.23,
+    "inference_ms": 260.86,
+    "nms_postprocess_ms": 279.56,
+    "total_ms": 553.71,
+    "detection_count": 4,
+    "visual_artifact": "reports\\phase2\\verified_mine_0001_2015_jpg.jpg",
+    "detections": [
+      {
+        "class_id": 4,
+        "class": "mine_cylinder",
+        "confidence": 0.551,
+        "box": {
+          "x": 406,
+          "y": 428,
+          "w": 55,
+          "h": 56
+        },
+        "bbox_xyxy": [
+          406,
+          428,
+          461,
+          484
+        ],
+        "tile_id": "tile_003",
+        "source_width": 1024,
+        "source_height": 1024
+      },
+      {
+        "class_id": 4,
+        "class": "mine_cylinder",
+        "confidence": 0.517,
+        "box": {
+          "x": 438,
+          "y": 317,
+          "w": 25,
+          "h": 17
+        },
+        "bbox_xyxy": [
+          438,
+          317,
+          463,
+          334
+        ],
+        "tile_id": "tile_001",
+        "source_width": 1024,
+        "source_height": 1024
+      },
+      {
+        "class_id": 2,
+        "class": "shipwreck",
+        "confidence": 0.457,
+        "box": {
+          "x": 739,
+          "y": 10,
+          "w": 42,
+          "h": 27
+        },
+        "bbox_xyxy": [
+          739,
+          10,
+          781,
+          37
+        ],
+        "tile_id": "tile_001",
+        "source_width": 1024,
+        "source_height": 1024
+      },
+      {
+        "class_id": 2,
+        "class": "shipwreck",
+        "confidence": 0.37,
+        "box": {
+          "x": 84,
+          "y": 615,
+          "w": 42,
+          "h": 25
+        },
+        "bbox_xyxy": [
+          84,
+          615,
+          126,
+          640
+        ],
+        "tile_id": "tile_000",
+        "source_width": 1024,
+        "source_height": 1024
+      }
+    ]
+  }
+]
