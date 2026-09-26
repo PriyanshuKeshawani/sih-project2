@@ -32,6 +32,10 @@ class SonarDetector:
 
         # Reuse single persistent ONNX session on CPU
         self.session = ort.InferenceSession(model_path, providers=['CPUExecutionProvider'])
+        # Patch for onnxruntime webgpu pybind mismatch on Windows/Anaconda
+        if hasattr(self.session, '_sess') and not hasattr(self.session._sess, 'is_webgpu_graph_capture_enabled'):
+            type(self.session._sess).is_webgpu_graph_capture_enabled = lambda self: False
+
         self.input_name = self.session.get_inputs()[0].name
         self.output_name = self.session.get_outputs()[0].name
         self.last_debug_info: Dict[str, Any] = {}
@@ -72,8 +76,8 @@ class SonarDetector:
     def detect(
         self,
         img: np.ndarray,
-        conf_threshold: float = 0.25,
-        iou_threshold: float = 0.45,
+        conf_threshold: float = 0.30,
+        iou_threshold: float = 0.35,
         tiling: bool = True,
         preprocess: bool = True,
         tile_size: int = 640,
@@ -206,7 +210,8 @@ class SonarDetector:
                 boxes=all_global_boxes,
                 scores=all_scores,
                 class_ids=all_class_ids,
-                iou_threshold=iou_threshold
+                iou_threshold=iou_threshold,
+                iom_threshold=0.35
             )
 
             # Cross-class ambiguity suppression: if two distinct classes overlap with IoU >= 0.50

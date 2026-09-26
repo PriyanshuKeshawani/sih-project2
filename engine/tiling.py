@@ -160,12 +160,31 @@ class SonarTiler:
         return inter_area / float(min_area)
 
     @staticmethod
+    def _compute_iou(box_a: List[int], box_b: List[int]) -> float:
+        """Computes standard Intersection over Union (IoU)."""
+        x1 = max(box_a[0], box_b[0])
+        y1 = max(box_a[1], box_b[1])
+        x2 = min(box_a[2], box_b[2])
+        y2 = min(box_a[3], box_b[3])
+        inter_w = max(0, x2 - x1)
+        inter_h = max(0, y2 - y1)
+        inter_area = inter_w * inter_h
+        if inter_area <= 0:
+            return 0.0
+        area_a = (box_a[2] - box_a[0]) * (box_a[3] - box_a[1])
+        area_b = (box_b[2] - box_b[0]) * (box_b[3] - box_b[1])
+        union_area = area_a + area_b - inter_area
+        if union_area <= 0:
+            return 0.0
+        return inter_area / float(union_area)
+
+    @staticmethod
     def class_aware_nms(
         boxes: List[List[int]],
         scores: List[float],
         class_ids: List[int],
-        iou_threshold: float = 0.45,
-        iom_threshold: float = 0.50
+        iou_threshold: float = 0.35,
+        iom_threshold: float = 0.35
     ) -> List[int]:
         """
         Performs Non-Maximum Suppression independently for each class.
@@ -205,8 +224,8 @@ class SonarTiler:
                 for idx in np.array(indices).flatten():
                     c_kept.append(int(c_mask[idx]))
 
-            # Containment (IoM) suppression for same class
-            # Eliminates duplicate nested boxes (e.g. whole ship + part of ship)
+            # Containment (IoM) and dual-IoU suppression for same class
+            # Eliminates duplicate nested or dual-scale boxes (e.g. tile vs full-frame pass)
             c_kept_sorted = sorted(c_kept, key=lambda i: float(scores[i]), reverse=True)
             suppressed = set()
             for i in range(len(c_kept_sorted)):
@@ -218,7 +237,8 @@ class SonarTiler:
                     if idx_b in suppressed:
                         continue
                     iom = SonarTiler._compute_iom(boxes[idx_a], boxes[idx_b])
-                    if iom >= iom_threshold:
+                    iou = SonarTiler._compute_iou(boxes[idx_a], boxes[idx_b])
+                    if iom >= iom_threshold or iou >= iou_threshold:
                         suppressed.add(idx_b)
 
             for idx in c_kept_sorted:

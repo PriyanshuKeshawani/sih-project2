@@ -355,7 +355,7 @@ async function triggerScan() {
   formData.append("altitude", altitude);
 
   const confSlider = document.getElementById("conf-slider");
-  const confThreshold = confSlider ? confSlider.value : "0.25";
+  const confThreshold = confSlider ? confSlider.value : "0.30";
   formData.append("conf_threshold", confThreshold);
 
   const tileToggle = document.getElementById("tile-grid-toggle");

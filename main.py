@@ -76,7 +76,7 @@ async def get_samples():
 async def scan_sonar(
     sample_id: Optional[str] = Form(None),
     altitude: Optional[float] = Form(None),
-    conf_threshold: float = Form(0.25),
+    conf_threshold: float = Form(0.30),
     draw_tiles: bool = Form(False),
     source_type: str = Form("RECORDED_REAL_DATA"),
     dataset_name: Optional[str] = Form(None),
