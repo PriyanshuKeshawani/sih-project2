@@ -105,33 +105,41 @@ class SonarDetector:
         else:
             working_img = orig_bgr
 
-        # 2. Tiling or Direct Inference
-        if tiling:
-            tiler = SonarTiler(tile_size=tile_size, overlap=overlap)
-            tiles = tiler.split_into_tiles(working_img)
-        else:
-            # Fallback: direct resize (not recommended for large imagery)
-            direct_resized = cv2.resize(working_img, (tile_size, tile_size))
-            tiles = [SonarTile(
-                tile_id="tile_direct",
-                image=direct_resized,
-                x_offset=0,
-                y_offset=0,
-                valid_width=tile_size,
-                valid_height=tile_size,
-                tile_width=tile_size,
-                tile_height=tile_size,
-                pad_right=0,
-                pad_bottom=0
-            )]
-
+        # 2. Hybrid Multi-Scale Tiling & Full-Frame Inference
         all_global_boxes: List[List[int]] = []
         all_scores: List[float] = []
         all_class_ids: List[int] = []
         all_tile_ids: List[str] = []
         raw_tile_detections_count: int = 0
 
-        # 3. Process Each Tile
+        # Full-frame direct pass (captures large panoramic targets like full shipwrecks & pipelines)
+        direct_resized = cv2.resize(orig_bgr, (tile_size, tile_size))
+        b_dir, s_dir, c_dir = self._infer_tile_raw(direct_resized)
+        valid_dir = s_dir >= conf_threshold
+        scale_x = orig_w / float(tile_size)
+        scale_y = orig_h / float(tile_size)
+        for bx, sc, cl in zip(b_dir[valid_dir], s_dir[valid_dir], c_dir[valid_dir]):
+            bw = (bx[2] - bx[0]) * scale_x
+            bh = (bx[3] - bx[1]) * scale_y
+            if bw >= 4.0 and bh >= 4.0:
+                all_global_boxes.append([
+                    max(0, int(round(bx[0] * scale_x))),
+                    max(0, int(round(bx[1] * scale_y))),
+                    min(orig_w, int(round(bx[2] * scale_x))),
+                    min(orig_h, int(round(bx[3] * scale_y)))
+                ])
+                all_scores.append(float(sc))
+                all_class_ids.append(int(cl))
+                all_tile_ids.append("tile_direct")
+                raw_tile_detections_count += 1
+
+        if tiling:
+            tiler = SonarTiler(tile_size=tile_size, overlap=overlap)
+            tiles = tiler.split_into_tiles(working_img)
+        else:
+            tiles = []
+
+        # 3. Process Each Tile (Sliding-window for fine-grained small targets)
         for tile in tiles:
             boxes_xyxy, scores, class_ids = self._infer_tile_raw(tile.image)
 
