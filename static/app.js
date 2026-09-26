@@ -373,13 +373,20 @@ async function triggerScan() {
 
   const startTime = performance.now();
 
+  const scanBtn = document.getElementById("btn-trigger-scan");
+  if (scanBtn) scanBtn.disabled = true;
+
   try {
     const res = await fetch("/api/scan", {
       method: "POST",
       body: formData
     });
 
-    if (!res.ok) throw new Error("Acoustic scan failed.");
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error("Scan error response:", res.status, errText);
+      throw new Error(`Acoustic scan failed: ${res.status}`);
+    }
     const data = await res.json();
     const duration = (performance.now() - startTime).toFixed(1);
 
@@ -395,6 +402,8 @@ async function triggerScan() {
     console.error(err);
     timer.textContent = "SCAN ERROR";
     timer.style.color = "var(--red-neon)";
+  } finally {
+    if (scanBtn) scanBtn.disabled = false;
   }
 }
 

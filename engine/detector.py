@@ -30,8 +30,13 @@ class SonarDetector:
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"Model file not found: {model_path}")
 
-        # Reuse single persistent ONNX session on CPU
-        self.session = ort.InferenceSession(model_path, providers=['CPUExecutionProvider'])
+        # Reuse single persistent ONNX session on CPU optimized for 0.5 CPU / low memory
+        sess_opts = ort.SessionOptions()
+        sess_opts.intra_op_num_threads = 1
+        sess_opts.inter_op_num_threads = 1
+        sess_opts.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
+        sess_opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+        self.session = ort.InferenceSession(model_path, sess_options=sess_opts, providers=['CPUExecutionProvider'])
         # Patch for onnxruntime webgpu pybind mismatch on Windows/Anaconda
         if hasattr(self.session, '_sess') and not hasattr(self.session._sess, 'is_webgpu_graph_capture_enabled'):
             type(self.session._sess).is_webgpu_graph_capture_enabled = lambda self: False
@@ -137,9 +142,24 @@ class SonarDetector:
                 all_tile_ids.append("tile_direct")
                 raw_tile_detections_count += 1
 
+        # Cap max tiling dimensions to 1280 to prevent CPU starvation on low-tier cloud instances
+        max_dim = max(orig_h, orig_w)
+        if max_dim > 1280:
+            scale_fac = 1280.0 / float(max_dim)
+            tile_w = max(640, int(round(orig_w * scale_fac)))
+            tile_h = max(640, int(round(orig_h * scale_fac)))
+            tile_input_img = cv2.resize(working_img, (tile_w, tile_h), interpolation=cv2.INTER_AREA)
+            t_scale_x = orig_w / float(tile_w)
+            t_scale_y = orig_h / float(tile_h)
+        else:
+            tile_input_img = working_img
+            tile_w, tile_h = orig_w, orig_h
+            t_scale_x = 1.0
+            t_scale_y = 1.0
+
         if tiling:
             tiler = SonarTiler(tile_size=tile_size, overlap=overlap)
-            tiles = tiler.split_into_tiles(working_img)
+            tiles = tiler.split_into_tiles(tile_input_img)
         else:
             tiles = []
 
@@ -187,9 +207,16 @@ class SonarDetector:
             # Remap kept boxes to global image space
             for k_idx in tile_keep_idx:
                 raw_box = t_boxes[k_idx].tolist()
-                global_box = SonarTiler.remap_box_to_global(raw_box, tile, orig_w, orig_h)
+                global_box = SonarTiler.remap_box_to_global(raw_box, tile, tile_w, tile_h)
                 if global_box is not None:
-                    all_global_boxes.append(global_box)
+                    # Accurately scale coordinates back to full original image space
+                    scaled_box = [
+                        max(0, min(orig_w, int(round(global_box[0] * t_scale_x)))),
+                        max(0, min(orig_h, int(round(global_box[1] * t_scale_y)))),
+                        max(0, min(orig_w, int(round(global_box[2] * t_scale_x)))),
+                        max(0, min(orig_h, int(round(global_box[3] * t_scale_y))))
+                    ]
+                    all_global_boxes.append(scaled_box)
                     all_scores.append(float(t_scores[k_idx]))
                     all_class_ids.append(int(t_classes[k_idx]))
                     all_tile_ids.append(tile.tile_id)

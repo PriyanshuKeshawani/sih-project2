@@ -407,6 +407,7 @@ class SarvamSystem2Engine:
     def _call_sarvam_chat(self, messages: List[Dict[str, str]], temperature: float = 0.1) -> str:
         """Executes HTTP POST request to Sarvam AI Chat Completions endpoint."""
         import urllib.request
+        import urllib.error
         payload = {
             "model": self.model,
             "messages": messages,
@@ -423,11 +424,16 @@ class SarvamSystem2Engine:
             },
             method="POST"
         )
-        with urllib.request.urlopen(req, timeout=self.timeout_s) as resp:
-            res_data = json.loads(resp.read().decode("utf-8"))
-            choice = res_data.get("choices", [{}])[0]
-            msg = choice.get("message", {})
-            return msg.get("content", "")
+        try:
+            with urllib.request.urlopen(req, timeout=self.timeout_s) as resp:
+                res_data = json.loads(resp.read().decode("utf-8"))
+                choice = res_data.get("choices", [{}])[0]
+                msg = choice.get("message", {})
+                return msg.get("content", "")
+        except urllib.error.HTTPError as http_err:
+            err_body = http_err.read().decode("utf-8", errors="ignore")
+            logger.error(f"Sarvam API HTTPError {http_err.code}: {err_body}")
+            raise RuntimeError(f"HTTP {http_err.code}: {err_body[:120]}") from http_err
 
     def _clean_and_parse_json(self, raw_str: Any) -> Optional[Dict[str, Any]]:
         """Cleans and extracts JSON dictionary from LLM output (handles code fences, wrappers)."""

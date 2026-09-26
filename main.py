@@ -12,6 +12,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 
+import gc
 from engine.detector import SonarDetector
 from engine.physics import SonarPhysicsEngine
 from engine.reflex import System1ReflexEngine
@@ -21,6 +22,8 @@ from engine.temporal_tracking import TemporalPersistenceTracker, TrackingConfig
 from engine.config import get_current_config
 from engine.logger import console_log, get_console_logger, get_recent_logs
 from engine.metadata import SurveyMetadata
+from engine.scan_cache import scan_cache
+
 
 app = FastAPI(
     title="SAMUDRA-AI: Autonomous Sonar Debris & Anomaly System",
@@ -105,20 +108,35 @@ async def scan_sonar(
     img_bgr = None
     img_name = "uploaded_sonar_frame.png"
 
+    raw_bytes = None
     if file and file.filename:
         img_name = file.filename
-        contents = await file.read()
-        nparr = np.frombuffer(contents, np.uint8)
+        raw_bytes = await file.read()
+        nparr = np.frombuffer(raw_bytes, np.uint8)
         img_bgr = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
     elif sample_id:
         img_name = sample_id
         sample_path = os.path.join(SAMPLES_DIR, sample_id)
         if os.path.exists(sample_path):
+            with open(sample_path, "rb") as sf:
+                raw_bytes = sf.read()
             img_bgr = cv2.imread(sample_path)
 
-    if img_bgr is None:
+    if img_bgr is None or raw_bytes is None:
         console_log("ERROR", f"No valid sonar image decoded for {scan_id}", scan_id=scan_id, level=40)
         return JSONResponse({"error": "No valid sonar image provided."}, status_code=400)
+
+    # -------------------------------------------------------------
+    # High-Performance In-Memory Cache Check (< 5ms response)
+    # -------------------------------------------------------------
+    cache_key = scan_cache.compute_key(raw_bytes, conf_threshold, altitude, draw_tiles)
+    cached_payload = scan_cache.get(cache_key)
+    if cached_payload:
+        cached_payload["scan_id"] = scan_id
+        cached_payload["cached"] = True
+        cached_ms = round((time.perf_counter() - t_scan_start) * 1000.0, 2)
+        console_log("CACHE", f"hit=true key={cache_key[:12]} latency_ms={cached_ms}", scan_id=scan_id)
+        return JSONResponse(cached_payload)
 
     orig_h, orig_w = img_bgr.shape[:2]
 
@@ -279,7 +297,7 @@ async def scan_sonar(
         final_status=final_status
     )
 
-    return JSONResponse({
+    response_payload = {
         "status": "success",
         "scan_id": scan_id,
         "provenance": "REAL_AUTHENTIC",
@@ -297,7 +315,14 @@ async def scan_sonar(
         "annotated_image": f"data:image/jpeg;base64,{annotated_base64}",
         "raw_image": f"data:image/jpeg;base64,{raw_base64}",
         "logs": get_recent_logs(60)
-    })
+    }
+
+    # Store in high-performance LRU cache for instant repeat scans
+    scan_cache.put(cache_key, response_payload)
+    # Reclaim intermediate memory to strictly protect 512MB RAM budget
+    gc.collect()
+
+    return JSONResponse(response_payload)
 
 @app.get("/api/logs")
 async def get_server_logs(limit: int = 100):
