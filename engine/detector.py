@@ -292,8 +292,9 @@ class SonarDetector:
         return final_detections, annotated_img
 
     @staticmethod
-    def encode_image(img_bgr: np.ndarray) -> str:
-        _, buffer = cv2.imencode('.jpg', img_bgr)
+    def encode_image(img_bgr: np.ndarray, quality: int = 80) -> str:
+        encode_params = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
+        _, buffer = cv2.imencode('.jpg', img_bgr, encode_params)
         return base64.b64encode(buffer).decode('utf-8')
 
     @staticmethod

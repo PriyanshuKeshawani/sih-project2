@@ -10,6 +10,7 @@ from fastapi import FastAPI, File, UploadFile, Form, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 
 from engine.detector import SonarDetector
 from engine.physics import SonarPhysicsEngine
@@ -26,6 +27,9 @@ app = FastAPI(
     description="SIH 2026 Problem Statement 26057 — MoES / NIOT Chennai",
     version="2.0.0"
 )
+
+# Gzip compression for all JSON & static assets (>500 bytes)
+app.add_middleware(GZipMiddleware, minimum_size=500)
 
 app.add_middleware(
     CORSMiddleware,

@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
   fetchSystem1Status();
   fetchSystem2Status();
   pollServerLogs();
-  setInterval(pollServerLogs, 2500);
+  setInterval(pollServerLogs, 8000); // 8s polling interval to prevent server choke
 });
 
 // =====================================================================
