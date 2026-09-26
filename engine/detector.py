@@ -237,10 +237,19 @@ class SonarDetector:
                 # Draw annotation
                 color = CLASS_COLORS.get(cls_name, (0, 255, 0))
                 cv2.rectangle(annotated_img, (gx1, gy1), (gx2, gy2), color, 2)
-                label = f"{display_label}: {score*100:.1f}%"
-                (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.45, 1)
-                cv2.rectangle(annotated_img, (gx1, max(0, gy1 - 20)), (gx1 + tw + 6, max(20, gy1)), color, -1)
-                cv2.putText(annotated_img, label, (gx1 + 3, max(15, gy1 - 5)), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 0), 1, cv2.LINE_AA)
+                short_tag = {
+                    'shipwreck': 'WRECK',
+                    'ghost_net': 'GHOST NET',
+                    'mine_cylinder': 'MINE',
+                    'submarine_pipeline': 'PIPE',
+                    'crab_pot': 'CRAB POT'
+                }.get(cls_name, cls_name.upper())
+                label = f"{short_tag} {score*100:.0f}%"
+                (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.40, 1)
+                tag_y1 = max(0, gy1 - 18) if gy1 > 20 else gy2
+                tag_y2 = tag_y1 + 18
+                cv2.rectangle(annotated_img, (gx1, tag_y1), (gx1 + tw + 6, tag_y2), color, -1)
+                cv2.putText(annotated_img, label, (gx1 + 3, tag_y1 + 13), cv2.FONT_HERSHEY_SIMPLEX, 0.40, (0, 0, 0), 1, cv2.LINE_AA)
 
         self.last_debug_info = {
             "tile_count": len(tiles) if tiling else 1,

@@ -557,21 +557,31 @@ function renderInteractiveOverlays() {
     bboxDiv.style.width = `${widthPct}%`;
     bboxDiv.style.height = `${heightPct}%`;
 
-    // Cautious terminology (Section 2): SHIPWRECK-CLASS CONTACT instead of confirmed shipwreck
+    // Cautious terminology & compact professional display
     const cautiousLabel = getCautiousLabel(d.class);
+    const shortName = getShortLabel(d.class);
     const confText = `${(d.confidence * 100).toFixed(0)}%`;
     const pStatus = d.persistence_status || "NEW_CONTACT";
     const statusIcon = getPersistenceIcon(pStatus);
 
     const tagDiv = document.createElement("div");
-    tagDiv.className = "overlay-badge-tag";
-    tagDiv.innerHTML = `
-      <span>${statusIcon} ${pStatus}</span>
-      <span>|</span>
-      <span>${cautiousLabel}: ${confText}</span>
-      <span>[${d.track_id || d.detection_id}]</span>
-    `;
+    let tagClasses = ["overlay-badge-tag"];
 
+    // Smart adaptive edge positioning:
+    // If box is near top edge (< 5%), tuck tag inside box top so it never clips off top
+    if (topPct < 5) {
+      tagClasses.push("tag-top-inside");
+    }
+    // If box is near right edge (> 85%), align tag to right of box
+    if (leftPct + widthPct > 85) {
+      tagClasses.push("tag-align-right");
+    }
+
+    tagDiv.className = tagClasses.join(" ");
+    tagDiv.innerHTML = `<span>${statusIcon} ${shortName} ${confText}</span>`;
+    tagDiv.title = `${cautiousLabel} (${confText}) | ${pStatus} [${d.track_id || d.detection_id}]`;
+
+    bboxDiv.title = `Click to inspect: ${cautiousLabel} (${confText})`;
     bboxDiv.appendChild(tagDiv);
 
     bboxDiv.addEventListener("click", (e) => {
@@ -581,6 +591,17 @@ function renderInteractiveOverlays() {
 
     container.appendChild(bboxDiv);
   });
+}
+
+function getShortLabel(className) {
+  if (!className) return "Contact";
+  const lower = className.toLowerCase();
+  if (lower.includes("shipwreck")) return "Wreck";
+  if (lower.includes("ghost_net")) return "Ghost Net";
+  if (lower.includes("mine")) return "Mine";
+  if (lower.includes("pipe")) return "Pipeline";
+  if (lower.includes("crab")) return "Crab Pot";
+  return className.split("_")[0];
 }
 
 function getCautiousLabel(className) {

@@ -463,20 +463,37 @@ body {
 
 .overlay-badge-tag {
   position: absolute;
-  top: -22px;
-  left: -2px;
-  background: rgba(6, 11, 24, 0.95);
+  top: -19px;
+  left: -1px;
+  background: rgba(6, 11, 24, 0.92);
   border: 1px solid var(--cyan-accent);
-  padding: 1px 6px;
-  border-radius: 3px;
+  padding: 1px 5px;
+  border-radius: 2px;
   font-family: var(--font-mono);
-  font-size: 0.65rem;
-  font-weight: 600;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
   color: #fff;
   white-space: nowrap;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+  z-index: 10;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+.overlay-badge-tag.tag-top-inside {
+  top: 2px;
+}
+
+.overlay-badge-tag.tag-align-right {
+  left: auto;
+  right: -1px;
 }
 
 .sonar-placeholder {
