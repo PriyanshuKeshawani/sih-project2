@@ -187,3 +187,34 @@ class SonarTiler:
         # Sort all kept indices across all classes by confidence score descending
         keep_indices = sorted(keep_indices, key=lambda i: float(scores[i]), reverse=True)
         return keep_indices
+
+    @staticmethod
+    def cross_class_nms(
+        boxes: List[List[int]],
+        scores: List[float],
+        iou_threshold: float = 0.50
+    ) -> List[int]:
+        """
+        Suppresses redundant overlapping bounding boxes across different classes
+        when two distinct classes claim the exact same physical anomaly (IoU >= iou_threshold).
+        Resolves classification conflict by strictly keeping the candidate with higher confidence.
+        """
+        if len(boxes) <= 1:
+            return list(range(len(boxes)))
+
+        # Convert [x1, y1, x2, y2] to cv2 [x, y, w, h] format
+        cv_boxes = []
+        for b in boxes:
+            x1, y1, x2, y2 = b
+            cv_boxes.append([int(x1), int(y1), int(x2 - x1), int(y2 - y1)])
+
+        indices = cv2.dnn.NMSBoxes(
+            bboxes=cv_boxes,
+            scores=[float(s) for s in scores],
+            score_threshold=0.0,
+            nms_threshold=float(iou_threshold)
+        )
+
+        if len(indices) > 0:
+            return [int(i) for i in np.array(indices).flatten()]
+        return []

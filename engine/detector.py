@@ -209,6 +209,18 @@ class SonarDetector:
                 iou_threshold=iou_threshold
             )
 
+            # Cross-class ambiguity suppression: if two distinct classes overlap with IoU >= 0.50
+            # on the identical physical anomaly, retain only the class with higher confidence.
+            if len(global_keep_idx) > 1:
+                kept_boxes = [all_global_boxes[i] for i in global_keep_idx]
+                kept_scores = [all_scores[i] for i in global_keep_idx]
+                cc_keep_indices = SonarTiler.cross_class_nms(
+                    boxes=kept_boxes,
+                    scores=kept_scores,
+                    iou_threshold=0.50
+                )
+                global_keep_idx = [global_keep_idx[i] for i in cc_keep_indices]
+
             for g_idx in global_keep_idx:
                 gx1, gy1, gx2, gy2 = all_global_boxes[g_idx]
                 cls_id = all_class_ids[g_idx]
