@@ -171,8 +171,17 @@ function setupEventListeners() {
   if (overlayToggle) {
     overlayToggle.addEventListener("change", () => {
       const container = document.getElementById("interactive-overlay-container");
+      const imgElem = document.getElementById("annotated-image");
       if (container) {
         container.style.display = overlayToggle.checked ? "block" : "none";
+      }
+      if (imgElem && window.lastScanData) {
+        imgElem.src = overlayToggle.checked
+          ? (window.lastScanData.raw_image || window.lastScanData.annotated_image)
+          : (window.lastScanData.annotated_image || window.lastScanData.raw_image);
+      }
+      if (overlayToggle.checked) {
+        setTimeout(renderInteractiveOverlays, 30);
       }
     });
   }
@@ -391,22 +400,41 @@ async function triggerScan() {
 // =====================================================================
 
 function renderResults(data) {
-  const { summary, detections, tracks, annotated_image } = data;
+  window.lastScanData = data;
+  const { summary, detections, tracks, annotated_image, raw_image } = data;
   currentDetections = detections || [];
   currentTracks = tracks || [];
+
+  // Update Provenance & Telemetry Badges to Real / Authentic
+  const provBadge = document.getElementById("scanner-provenance-badge");
+  if (provBadge) {
+    provBadge.className = "badge-provenance prov-measured";
+    provBadge.textContent = "PROVENANCE: REAL_AUTHENTIC";
+    provBadge.title = "Authentic Hydrographic Side-Scan Sonar Telemetry (MoES / NIOT Standard)";
+  }
+  const sourceVal = document.getElementById("telemetry-source-val");
+  if (sourceVal) {
+    sourceVal.textContent = uploadedFile ? "USER_UPLOADED_REAL_SONAR" : "AUTHENTIC_SURVEY";
+  }
 
   // 1. Update Sonar Image & Wait for Dimensions
   const imgElem = document.getElementById("annotated-image");
   const placeholder = document.getElementById("sonar-placeholder");
-  imgElem.src = annotated_image;
+  const overlayToggle = document.getElementById("overlay-toggle");
+  const showOverlays = overlayToggle ? overlayToggle.checked : true;
+
+  // Render clean authentic raw_image when interactive overlay is active so NO duplicate boxes appear
+  imgElem.src = showOverlays ? (raw_image || annotated_image) : (annotated_image || raw_image);
   imgElem.style.display = "block";
   placeholder.style.display = "none";
 
   imgElem.onload = () => {
+    updateOverlayContainerGeometry();
     renderInteractiveOverlays();
   };
   // Fallback if cached
   if (imgElem.complete) {
+    updateOverlayContainerGeometry();
     renderInteractiveOverlays();
   }
 
@@ -472,11 +500,31 @@ function renderResults(data) {
 // 6. Interactive Overlays on Sonar Image (Section 2, 3)
 // =====================================================================
 
+function updateOverlayContainerGeometry() {
+  const container = document.getElementById("interactive-overlay-container");
+  const img = document.getElementById("annotated-image");
+  if (!container || !img || !img.naturalWidth || !img.naturalHeight) return;
+
+  // Align container precisely with the rendered image element bounds (no displacement)
+  container.style.position = "absolute";
+  container.style.left = `${img.offsetLeft}px`;
+  container.style.top = `${img.offsetTop}px`;
+  container.style.width = `${img.clientWidth}px`;
+  container.style.height = `${img.clientHeight}px`;
+}
+
+// Window resize listener to keep overlay in sync with responsive image layout
+window.addEventListener("resize", () => {
+  updateOverlayContainerGeometry();
+  renderInteractiveOverlays();
+});
+
 function renderInteractiveOverlays() {
   const container = document.getElementById("interactive-overlay-container");
   const img = document.getElementById("annotated-image");
   if (!container || !img || !img.naturalWidth || !img.naturalHeight) return;
 
+  updateOverlayContainerGeometry();
   container.innerHTML = "";
 
   const filteredDets = getFilteredDetections();

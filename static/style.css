@@ -442,12 +442,23 @@ body {
 
 .overlay-bbox.bbox-critical {
   border-color: var(--red-neon);
-  box-shadow: 0 0 8px rgba(255, 23, 68, 0.5);
+  box-shadow: 0 0 10px rgba(255, 23, 68, 0.7);
+}
+
+.overlay-bbox.bbox-critical .overlay-badge-tag {
+  border-color: var(--red-neon);
+  background: rgba(24, 4, 8, 0.95);
+  box-shadow: 0 0 8px rgba(255, 23, 68, 0.4);
 }
 
 .overlay-bbox.bbox-warning {
   border-color: var(--orange-neon);
-  box-shadow: 0 0 8px rgba(255, 145, 0, 0.5);
+  box-shadow: 0 0 8px rgba(255, 145, 0, 0.6);
+}
+
+.overlay-bbox.bbox-warning .overlay-badge-tag {
+  border-color: var(--orange-neon);
+  background: rgba(28, 14, 2, 0.95);
 }
 
 .overlay-badge-tag {
@@ -651,10 +662,11 @@ body {
   letter-spacing: 0.5px;
 }
 
-.prov-measured {
-  background: rgba(0, 230, 118, 0.15);
+.prov-measured, .prov-authentic, .prov-real {
+  background: rgba(0, 230, 118, 0.18);
   color: var(--green-neon);
-  border: 1px solid rgba(0, 230, 118, 0.4);
+  border: 1px solid rgba(0, 230, 118, 0.5);
+  box-shadow: 0 0 8px rgba(0, 230, 118, 0.2);
 }
 
 .prov-derived {

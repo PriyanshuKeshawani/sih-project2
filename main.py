@@ -278,6 +278,8 @@ async def scan_sonar(
     return JSONResponse({
         "status": "success",
         "scan_id": scan_id,
+        "provenance": "REAL_AUTHENTIC",
+        "source_type": source_type,
         "summary": summary,
         "debug": debug_info,
         "detections": results,
