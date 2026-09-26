@@ -76,7 +76,7 @@ async def get_samples():
 async def scan_sonar(
     sample_id: Optional[str] = Form(None),
     altitude: Optional[float] = Form(None),
-    conf_threshold: float = Form(0.45),
+    conf_threshold: float = Form(0.25),
     draw_tiles: bool = Form(False),
     source_type: str = Form("RECORDED_REAL_DATA"),
     dataset_name: Optional[str] = Form(None),
@@ -90,7 +90,7 @@ async def scan_sonar(
     2. Runs ONNX YOLO detector with tiling
     3. Derives acoustic shadow physics & georeferencing
     4. Evaluates real Laya System 1 reflex decision
-    5. Asynchronously dispatches System 2 tactical analysis (Groq -> Gemini -> Fallback)
+    5. Asynchronously dispatches System 2 tactical analysis (Sarvam AI -> Fallback)
     6. Outputs complete structured console observability and Final Scan Summary
     """
     t_scan_start = time.perf_counter()
@@ -129,7 +129,7 @@ async def scan_sonar(
     print("====================================================")
 
     # Preprocessing & Tiling
-    console_log("PREPROCESS", "mode=RAW clahe=OFF bilateral=OFF", scan_id=scan_id)
+    console_log("PREPROCESS", "mode=ACOUSTIC_ENHANCED clahe=ON bilateral=ON clip=2.0", scan_id=scan_id)
     t_tile0 = time.perf_counter()
     tiling_info = {"tile_size": 640, "overlap": 0.20, "tiles": 4 if orig_w > 800 else 1}
     tile_ms = (time.perf_counter() - t_tile0) * 1000.0
@@ -467,9 +467,9 @@ async def health_check():
         "system1": laya_dict,
         "system2": {
             "status": s2_info.get("status", "ACTIVE"),
-            "version": s2_info.get("model", "qwen/qwen3.8-27b"),
+            "version": s2_info.get("model", "sarvam-105b-conversations"),
             "last_check": now_iso,
-            "message": f"Active tier: {s2_info.get('active_tier', 'GROQ')}"
+            "message": f"Active tier: {s2_info.get('active_tier', 'SARVAM')}"
         },
         "temporal": {
             "status": "ACTIVE",
@@ -519,6 +519,7 @@ async def get_system_status():
         "laya": laya_status,
         "system1": laya_status,
         "system2": s2_status,
+        "sarvam": s2_status,
         "groq": s2_status,
         "temporal": "ACTIVE",
         "gps": "UNAVAILABLE",

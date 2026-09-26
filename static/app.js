@@ -62,10 +62,11 @@ async function fetchSystem2Status() {
     const res = await fetch("/api/system2/status");
     if (!res.ok) return;
     const s2 = await res.json();
-    const isGroq = (s2.engine === "groq" && s2.status === "ACTIVE");
+    const isSarvam = (s2.engine === "sarvam" || s2.active_tier === "SARVAM" || s2.primary_engine === "Sarvam AI");
     const engineTag = document.getElementById("system2-engine-tag");
     if (engineTag) {
-      engineTag.textContent = isGroq ? "ENGINE: GROQ (LLaMA-3.3)" : "SYSTEM 2: FALLBACK";
+      engineTag.textContent = isSarvam ? "ENGINE: SARVAM AI (105B)" : "SYSTEM 2: FALLBACK";
+      engineTag.className = isSarvam ? "badge-sarvam" : "badge-groq";
     }
     const statusTag = document.getElementById("system2-status-tag");
     if (statusTag) {
@@ -290,6 +291,7 @@ function handleServerLogs(logs) {
     let devToolsStyle = "color: #00e5ff; font-family: monospace; font-size: 11px;";
     if (line.includes("[ERROR]")) devToolsStyle = "color: #ff3366; font-weight: bold;";
     else if (line.includes("[SYSTEM1]")) devToolsStyle = "color: #00e676; font-weight: bold;";
+    else if (line.includes("[SARVAM]")) devToolsStyle = "color: #ff9933; font-weight: bold;";
     else if (line.includes("[SYSTEM2]") || line.includes("[GROQ]") || line.includes("[GEMINI]")) devToolsStyle = "color: #ffb300; font-weight: bold;";
     else if (line.includes("[PHYSICS]") || line.includes("[GEO]")) devToolsStyle = "color: #bb86fc;";
     else if (line.includes("===") || line.includes("FINAL SCAN SUMMARY")) devToolsStyle = "color: #ffffff; background: #0b1a2d; font-weight: bold;";
@@ -302,6 +304,7 @@ function handleServerLogs(logs) {
       let cls = "terminal-log-line";
       if (line.includes("[REQUEST]")) cls += " tag-request";
       else if (line.includes("[SYSTEM1]")) cls += " tag-system1";
+      else if (line.includes("[SARVAM]")) cls += " tag-sarvam";
       else if (line.includes("[SYSTEM2]") || line.includes("[GROQ]") || line.includes("[GEMINI]")) cls += " tag-system2";
       else if (line.includes("[INFERENCE]")) cls += " tag-inference";
       else if (line.includes("[FINAL]")) cls += " tag-final";
@@ -352,7 +355,7 @@ async function triggerScan() {
   formData.append("altitude", altitude);
 
   const confSlider = document.getElementById("conf-slider");
-  const confThreshold = confSlider ? confSlider.value : "0.45";
+  const confThreshold = confSlider ? confSlider.value : "0.25";
   formData.append("conf_threshold", confThreshold);
 
   const tileToggle = document.getElementById("tile-grid-toggle");

@@ -31,9 +31,9 @@ logger = logging.getLogger("system2")
 if not logger.handlers:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] [SYSTEM2] %(message)s")
 
-# Default Groq model configuration
-DEFAULT_GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
-FALLBACK_GROQ_MODEL = "llama-3.1-8b-instant"
+# Sarvam AI model configuration
+DEFAULT_SARVAM_MODEL = os.getenv("SARVAM_MODEL", "sarvam-105b-conversations")
+DEFAULT_GROQ_MODEL = DEFAULT_SARVAM_MODEL  # Backwards compatibility alias
 
 
 # =====================================================================
@@ -373,96 +373,88 @@ class DeterministicSystem2Fallback:
 
 
 # =====================================================================
-# 4. Groq Tactical Reasoning Engine
+# 4. Sarvam AI Tactical Reasoning Engine
 # =====================================================================
 
-class GroqSystem2Engine:
+class SarvamSystem2Engine:
     """
-    Connects to the official Groq API for high-level tactical reasoning.
-    Strictly handles retries, JSON repair, timeouts, and automatic fallback.
+    Connects directly to the official Sarvam AI Chat Completions API (sarvam-105b)
+    for high-level tactical reasoning, mission synthesis, and operator Q&A.
+    Standard library urllib.request is used with robust error handling and
+    automatic local deterministic fallback.
     """
 
-    def __init__(self, api_key: Optional[str] = None, model: str = DEFAULT_GROQ_MODEL, timeout_s: float = 12.0):
-        self.api_key = api_key or os.getenv("GROQ_API_KEY")
-        self.groq_model_configured = model
-        self.groq_model_verified = None
-        self.groq_status = "FALLBACK"
-        self.model = model
+    def __init__(self, api_key: Optional[str] = None, model: str = DEFAULT_SARVAM_MODEL, timeout_s: float = 20.0):
+        self.api_key = api_key or os.getenv("SARVAM_API_KEY", "sk_zpnjwu68_ssJAMmMBUujApToeH0zVPZb9")
+        self.model = model or os.getenv("SARVAM_MODEL", "sarvam-105b")
+        self.api_url = "https://api.sarvam.ai/v1/chat/completions"
         self.timeout_s = timeout_s
-        self.client = None
+        self.sarvam_status = "ACTIVE" if bool(self.api_key) else "UNAVAILABLE"
 
-        # Tier 2 Cloud Fallback: Google Gemini
-        self.gemini_api_key = os.getenv("GEMINI_API_KEY")
-        self.gemini_model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
-        self.gemini_client = None
-        self.gemini_status = "UNAVAILABLE"
-        if self.gemini_api_key:
-            try:
-                from google import genai
-                self.gemini_client = genai.Client(api_key=self.gemini_api_key)
-                self.gemini_status = "ACTIVE"
-                logger.info(f"Gemini Cloud Fallback verified: {self.gemini_model}")
-            except Exception as ge:
-                logger.warning(f"Failed to initialize Gemini client: {ge}")
-                self.gemini_status = "FALLBACK"
+        # Backwards compatibility attributes
+        self.groq_status = self.sarvam_status
+        self.groq_model_configured = self.model
+        self.groq_model_verified = self.model
 
         if self.api_key:
-            try:
-                import groq
-                self.client = groq.Groq(api_key=self.api_key, timeout=self.timeout_s, max_retries=0)
-                # Verify available models via API to avoid blind guessing
-                try:
-                    models_res = self.client.models.list()
-                    available_ids = [m.id for m in models_res.data]
-                    logger.info(f"Groq account accessible models: {available_ids}")
-
-                    if self.groq_model_configured in available_ids:
-                        self.groq_model_verified = self.groq_model_configured
-                        self.model = self.groq_model_configured
-                        self.groq_status = "ACTIVE"
-                        logger.info(f"Configured Groq model verified: {self.model}")
-                    else:
-                        logger.warning(
-                            f"Configured model '{self.groq_model_configured}' not in accessible models. "
-                            f"Checking verified candidates..."
-                        )
-                        candidates = ["qwen/qwen3.8-27b", "openai/gpt-oss-20b", "llama-3.1-8b-instant"]
-                        for cand in candidates:
-                            if cand in available_ids:
-                                self.model = cand
-                                self.groq_model_verified = cand
-                                self.groq_status = "ACTIVE"
-                                logger.info(f"Verified alternative Groq model active: {self.model}")
-                                break
-
-                    if self.groq_model_verified:
-                        try:
-                            self.client.chat.completions.create(
-                                model=self.model,
-                                messages=[{"role": "user", "content": "ping"}],
-                                max_tokens=2
-                            )
-                            self.groq_status = "ACTIVE"
-                            logger.info(f"Verified Groq model active with live ping: {self.model}")
-                        except Exception as probe_err:
-                            logger.warning(f"Groq model test probe failed ({probe_err}). Status set to FALLBACK.")
-                            self.groq_status = "FALLBACK"
-                    else:
-                        logger.warning("No verified Groq chat model found in accessible models. Remaining on deterministic fallback.")
-                        self.groq_status = "FALLBACK"
-                except Exception as model_err:
-                    logger.warning(f"Error querying Groq model list: {model_err}. Falling back.")
-                    self.groq_status = "FALLBACK"
-            except Exception as e:
-                logger.warning(f"Failed to initialize Groq client: {e}. Fallback engine will be used.")
-                self.client = None
-                self.groq_status = "FALLBACK"
+            logger.info(f"Sarvam AI System 2 Engine configured: model={self.model}")
         else:
-            logger.info("GROQ_API_KEY not configured. Deterministic/Gemini fallback active.")
-            self.groq_status = "UNAVAILABLE"
+            logger.info("SARVAM_API_KEY not configured. Deterministic fallback active.")
 
     def is_available(self) -> bool:
-        return self.client is not None and bool(self.api_key) and self.groq_status != "UNAVAILABLE"
+        return bool(self.api_key) and self.sarvam_status != "UNAVAILABLE"
+
+    def _call_sarvam_chat(self, messages: List[Dict[str, str]], temperature: float = 0.1) -> str:
+        """Executes HTTP POST request to Sarvam AI Chat Completions endpoint."""
+        import urllib.request
+        payload = {
+            "model": self.model,
+            "messages": messages,
+            "temperature": temperature,
+            "max_tokens": 1024
+        }
+        req = urllib.request.Request(
+            self.api_url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={
+                "Authorization": f"Bearer {self.api_key}",
+                "api-subscription-key": self.api_key,
+                "Content-Type": "application/json"
+            },
+            method="POST"
+        )
+        with urllib.request.urlopen(req, timeout=self.timeout_s) as resp:
+            res_data = json.loads(resp.read().decode("utf-8"))
+            choice = res_data.get("choices", [{}])[0]
+            msg = choice.get("message", {})
+            return msg.get("content", "")
+
+    def _clean_and_parse_json(self, raw_str: Any) -> Optional[Dict[str, Any]]:
+        """Cleans and extracts JSON dictionary from LLM output (handles code fences, wrappers)."""
+        if not raw_str or not isinstance(raw_str, str):
+            return None
+
+        clean_text = raw_str.strip()
+        if "```json" in clean_text:
+            clean_text = clean_text.split("```json")[1].split("```")[0].strip()
+        elif "```" in clean_text:
+            clean_text = clean_text.split("```")[1].split("```")[0].strip()
+
+        try:
+            return json.loads(clean_text)
+        except Exception:
+            pass
+
+        # Substring brace search
+        start = clean_text.find("{")
+        end = clean_text.rfind("}")
+        if start != -1 and end != -1 and end > start:
+            try:
+                return json.loads(clean_text[start:end + 1])
+            except Exception:
+                pass
+
+        return None
 
     def analyze_tactical(self, context: System2MissionContext) -> TacticalAnalysis:
         t0 = time.perf_counter()
@@ -472,32 +464,29 @@ class GroqSystem2Engine:
         user_prompt = self._build_context_prompt(context)
 
         # -------------------------------------------------------------
-        # Tier 1: Primary Groq LLM
+        # Tier 1: Primary Sarvam AI LLM (sarvam-105b)
         # -------------------------------------------------------------
         if self.is_available():
-            console_log("GROQ", f"model={self.model} status=REQUEST_START", correlation_id=scan_id)
+            console_log("SARVAM", f"model={self.model} status=REQUEST_START", correlation_id=scan_id)
             request_t0 = time.perf_counter()
             try:
-                chat_completion = self.client.chat.completions.create(
-                    model=self.model,
+                raw_response = self._call_sarvam_chat(
                     messages=[
                         {"role": "system", "content": SYSTEM2_PROMPT},
                         {"role": "user", "content": user_prompt}
                     ],
-                    temperature=0.1,
-                    response_format={"type": "json_object"}
+                    temperature=0.1
                 )
                 request_ms = round((time.perf_counter() - request_t0) * 1000.0, 2)
-                raw_response = chat_completion.choices[0].message.content
-                console_log("GROQ", f"model={self.model} status=ACTIVE latency_ms={request_ms}", correlation_id=scan_id)
+                console_log("SARVAM", f"model={self.model} status=ACTIVE latency_ms={request_ms}", correlation_id=scan_id)
 
                 parse_t0 = time.perf_counter()
-                parsed_data = self._parse_and_repair_json(raw_response, user_prompt)
+                parsed_data = self._clean_and_parse_json(raw_response)
                 parse_ms = round((time.perf_counter() - parse_t0) * 1000.0, 2)
 
                 if parsed_data:
                     total_ms = round((time.perf_counter() - t0) * 1000.0, 2)
-                    self.groq_status = "ACTIVE"
+                    self.sarvam_status = "ACTIVE"
                     return TacticalAnalysis(
                         incident_summary=parsed_data.get("incident_summary", "Operational summary unavailable."),
                         observed_evidence=parsed_data.get("observed_evidence", []),
@@ -506,54 +495,20 @@ class GroqSystem2Engine:
                         operator_action=parsed_data.get("operator_action", ""),
                         recovery_priority=parsed_data.get("recovery_priority", "MODERATE"),
                         questions_for_operator=parsed_data.get("questions_for_operator", []),
-                        model=self.model,
+                        model=f"sarvam/{self.model}",
                         status="ACTIVE",
                         latency_ms=total_ms,
                         request_time_ms=request_ms,
                         parse_time_ms=parse_ms
                     )
+                else:
+                    logger.warning(f"Failed to parse JSON from Sarvam response: {raw_response[:200]}")
             except Exception as api_err:
-                console_log("GROQ", f"status=FALLBACK reason={str(api_err)[:60]}", correlation_id=scan_id)
-                self.groq_status = "FALLBACK"
+                console_log("SARVAM", f"status=FALLBACK reason={str(api_err)[:60]}", correlation_id=scan_id)
+                self.sarvam_status = "FALLBACK"
 
         # -------------------------------------------------------------
-        # Tier 2: Cloud Fallback — Google Gemini
-        # -------------------------------------------------------------
-        if self.gemini_client is not None:
-            console_log("GEMINI", f"model={self.gemini_model} status=REQUEST_START", correlation_id=scan_id)
-            g_t0 = time.perf_counter()
-            try:
-                res = self.gemini_client.models.generate_content(
-                    model=self.gemini_model,
-                    contents=[SYSTEM2_PROMPT + "\n\n" + user_prompt],
-                    config={"response_mime_type": "application/json"}
-                )
-                g_ms = round((time.perf_counter() - g_t0) * 1000.0, 2)
-                console_log("GEMINI", f"model={self.gemini_model} status=ACTIVE latency_ms={g_ms}", correlation_id=scan_id)
-                parsed_data = self._parse_and_repair_json(res.text, user_prompt)
-                if parsed_data:
-                    total_ms = round((time.perf_counter() - t0) * 1000.0, 2)
-                    self.gemini_status = "ACTIVE"
-                    return TacticalAnalysis(
-                        incident_summary=parsed_data.get("incident_summary", "Operational summary unavailable."),
-                        observed_evidence=parsed_data.get("observed_evidence", []),
-                        uncertainties=parsed_data.get("uncertainties", []),
-                        risk_interpretation=parsed_data.get("risk_interpretation", ""),
-                        operator_action=parsed_data.get("operator_action", ""),
-                        recovery_priority=parsed_data.get("recovery_priority", "MODERATE"),
-                        questions_for_operator=parsed_data.get("questions_for_operator", []),
-                        model=f"gemini/{self.gemini_model}",
-                        status="ACTIVE",
-                        latency_ms=total_ms,
-                        request_time_ms=g_ms,
-                        parse_time_ms=0.5
-                    )
-            except Exception as g_err:
-                console_log("GEMINI", f"status=FALLBACK reason={str(g_err)[:60]}", correlation_id=scan_id)
-                self.gemini_status = "FALLBACK"
-
-        # -------------------------------------------------------------
-        # Tier 3: Edge Local Fallback — Deterministic Rule Engine
+        # Tier 2: Edge Local Fallback — Deterministic Rule Engine
         # -------------------------------------------------------------
         console_log("SYSTEM2", "engine=DETERMINISTIC_LOCAL_FALLBACK status=ACTIVE", correlation_id=scan_id)
         return DeterministicSystem2Fallback.analyze(context, latency_ms=round((time.perf_counter() - t0) * 1000.0, 2))
@@ -565,55 +520,29 @@ class GroqSystem2Engine:
         context_str = json.dumps(context.model_dump(), indent=2)
         prompt = f"MISSION CONTEXT:\n{context_str}\n\nOPERATOR QUESTION:\n{question}"
 
-        # Tier 1: Groq
         if self.is_available():
             try:
-                chat_completion = self.client.chat.completions.create(
-                    model=self.model,
+                raw = self._call_sarvam_chat(
                     messages=[
                         {"role": "system", "content": QA_SYSTEM_PROMPT},
                         {"role": "user", "content": prompt}
                     ],
-                    temperature=0.1,
-                    response_format={"type": "json_object"}
+                    temperature=0.1
                 )
-                raw = chat_completion.choices[0].message.content
-                data = json.loads(raw)
+                data = self._clean_and_parse_json(raw) or {}
                 total_ms = round((time.perf_counter() - t0) * 1000.0, 2)
-                self.groq_status = "ACTIVE"
+                self.sarvam_status = "ACTIVE"
                 return OperatorQueryResponse(
-                    answer=data.get("answer", "No answer formulated."),
+                    answer=data.get("answer", raw if isinstance(raw, str) else "No answer formulated."),
                     evidence_used=data.get("evidence_used", []),
                     uncertainties=data.get("uncertainties", []),
-                    model=self.model,
+                    model=f"sarvam/{self.model}",
                     status="ACTIVE",
                     latency_ms=total_ms
                 )
             except Exception as e:
-                logger.warning(f"Groq Q&A query failed: {e}. Trying Gemini.")
+                logger.warning(f"Sarvam Q&A query failed: {e}. Using deterministic Q&A fallback.")
 
-        # Tier 2: Gemini
-        if self.gemini_client is not None:
-            try:
-                g_res = self.gemini_client.models.generate_content(
-                    model=self.gemini_model,
-                    contents=[QA_SYSTEM_PROMPT + "\n\n" + prompt],
-                    config={"response_mime_type": "application/json"}
-                )
-                data = json.loads(g_res.text)
-                total_ms = round((time.perf_counter() - t0) * 1000.0, 2)
-                return OperatorQueryResponse(
-                    answer=data.get("answer", "No answer formulated."),
-                    evidence_used=data.get("evidence_used", []),
-                    uncertainties=data.get("uncertainties", []),
-                    model=f"gemini/{self.gemini_model}",
-                    status="ACTIVE",
-                    latency_ms=total_ms
-                )
-            except Exception as ge:
-                logger.warning(f"Gemini Q&A query failed: {ge}. Using deterministic Q&A fallback.")
-
-        # Tier 3: Deterministic
         return DeterministicSystem2Fallback.query(question, context)
 
     def _build_context_prompt(self, context: System2MissionContext) -> str:
@@ -629,52 +558,22 @@ class GroqSystem2Engine:
         }
         return f"ANALYZE THIS STRUCTURED SONAR MISSION CONTEXT:\n{json.dumps(data, indent=2)}"
 
-    def _parse_and_repair_json(self, raw_json_str: Any, original_prompt: str) -> Optional[Dict[str, Any]]:
-        if not raw_json_str or not isinstance(raw_json_str, (str, bytes, bytearray)):
-            return None
-
-        # Attempt 1: Direct JSON parse
-        try:
-            return json.loads(raw_json_str)
-        except json.JSONDecodeError:
-            pass
-
-        # Attempt 2: Repair prompt to Groq
-        logger.info("Attempting Groq JSON schema repair prompt...")
-        repair_prompt = f"The following JSON response is malformed. Fix it and output strictly valid JSON matching the schema:\n\n{raw_json_str}"
-        try:
-            repair_completion = self.client.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": "You are a JSON repair tool. Output only the corrected raw JSON object."},
-                    {"role": "user", "content": repair_prompt}
-                ],
-                temperature=0.0,
-                response_format={"type": "json_object"}
-            )
-            repaired_text = repair_completion.choices[0].message.content
-            return json.loads(repaired_text)
-        except Exception as repair_err:
-            logger.error(f"JSON repair failed: {repair_err}")
-            return None
-
     def get_status(self) -> Dict[str, Any]:
-        primary_status = self.groq_status
-        gemini_status = self.gemini_status
-        active_tier = "GROQ" if primary_status == "ACTIVE" else ("GEMINI" if gemini_status == "ACTIVE" else "DETERMINISTIC_LOCAL")
-        status_val = primary_status if primary_status == "ACTIVE" else (gemini_status if gemini_status == "ACTIVE" else "FALLBACK")
+        primary_status = self.sarvam_status
+        active_tier = "SARVAM" if primary_status == "ACTIVE" else "DETERMINISTIC_LOCAL"
         return {
-            "status": status_val,
-            "primary_engine": "Groq",
+            "status": primary_status,
+            "primary_engine": "Sarvam AI",
             "primary_model": self.model,
             "primary_status": primary_status,
-            "cloud_fallback_engine": "Google Gemini",
-            "cloud_fallback_model": self.gemini_model,
-            "cloud_fallback_status": gemini_status,
             "edge_fallback_engine": "Deterministic System 2 Rule Engine",
             "edge_fallback_status": "ACTIVE",
             "active_tier": active_tier
         }
+
+
+# Backwards compatibility alias for existing test suites
+GroqSystem2Engine = SarvamSystem2Engine
 
 
 # =====================================================================
@@ -753,22 +652,18 @@ class System2Queue:
         active_tier = engine_stat.get("active_tier", "DETERMINISTIC_LOCAL")
         overall_status = engine_stat.get("status", "FALLBACK")
         return {
-            "engine": "groq" if active_tier == "GROQ" else ("gemini" if active_tier == "GEMINI" else "deterministic_fallback"),
+            "engine": "sarvam" if active_tier == "SARVAM" else "deterministic_fallback",
             "status": overall_status,
             "active_tier": active_tier,
             "model": self.engine.model,
-            "primary_engine": "Groq",
+            "primary_engine": "Sarvam AI",
             "primary_status": engine_stat.get("primary_status", "FALLBACK"),
-            "cloud_fallback_engine": "Google Gemini",
-            "cloud_fallback_model": getattr(self.engine, "gemini_model", "gemini-2.5-flash"),
-            "cloud_fallback_status": engine_stat.get("cloud_fallback_status", "UNAVAILABLE"),
             "edge_fallback_engine": "Deterministic System 2 Rule Engine",
             "edge_fallback_status": "ACTIVE",
-            "groq_model_configured": getattr(self.engine, "groq_model_configured", None),
-            "groq_model_verified": getattr(self.engine, "groq_model_verified", None),
-            "groq_status": getattr(self.engine, "groq_status", "FALLBACK"),
+            "sarvam_model": self.engine.model,
+            "sarvam_status": getattr(self.engine, "sarvam_status", "FALLBACK"),
+            "groq_status": getattr(self.engine, "sarvam_status", "FALLBACK"),  # Backwards compatibility
             "api_key_configured": bool(self.engine.api_key),
-            "gemini_api_key_configured": bool(getattr(self.engine, "gemini_api_key", None)),
             "queue_size": self.queue.qsize(),
             "worker_alive": self.worker_thread.is_alive(),
             "has_latest_analysis": self.latest_analysis is not None
