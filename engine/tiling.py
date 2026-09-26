@@ -141,16 +141,36 @@ class SonarTiler:
         return [gx1, gy1, gx2, gy2]
 
     @staticmethod
+    def _compute_iom(box_a: List[int], box_b: List[int]) -> float:
+        """Computes Intersection over Minimum Area (Containment ratio)."""
+        x1 = max(box_a[0], box_b[0])
+        y1 = max(box_a[1], box_b[1])
+        x2 = min(box_a[2], box_b[2])
+        y2 = min(box_a[3], box_b[3])
+        inter_w = max(0, x2 - x1)
+        inter_h = max(0, y2 - y1)
+        inter_area = inter_w * inter_h
+        if inter_area <= 0:
+            return 0.0
+        area_a = (box_a[2] - box_a[0]) * (box_a[3] - box_a[1])
+        area_b = (box_b[2] - box_b[0]) * (box_b[3] - box_b[1])
+        min_area = min(area_a, area_b)
+        if min_area <= 0:
+            return 0.0
+        return inter_area / float(min_area)
+
+    @staticmethod
     def class_aware_nms(
         boxes: List[List[int]],
         scores: List[float],
         class_ids: List[int],
-        iou_threshold: float = 0.45
+        iou_threshold: float = 0.45,
+        iom_threshold: float = 0.50
     ) -> List[int]:
         """
         Performs Non-Maximum Suppression independently for each class.
-        Guarantees that distinct classes (e.g. ghost_net and pipeline) never suppress each other.
-        Returns list of kept original indices sorted by confidence descending.
+        Includes both standard IoU NMS and Containment (IoM) suppression to eliminate
+        redundant sub-region detections of the same large structural target.
         """
         if len(boxes) == 0:
             return []
@@ -180,9 +200,30 @@ class SonarTiler:
                 nms_threshold=float(iou_threshold)
             )
 
+            c_kept = []
             if len(indices) > 0:
                 for idx in np.array(indices).flatten():
-                    keep_indices.append(int(c_mask[idx]))
+                    c_kept.append(int(c_mask[idx]))
+
+            # Containment (IoM) suppression for same class
+            # Eliminates duplicate nested boxes (e.g. whole ship + part of ship)
+            c_kept_sorted = sorted(c_kept, key=lambda i: float(scores[i]), reverse=True)
+            suppressed = set()
+            for i in range(len(c_kept_sorted)):
+                idx_a = c_kept_sorted[i]
+                if idx_a in suppressed:
+                    continue
+                for j in range(i + 1, len(c_kept_sorted)):
+                    idx_b = c_kept_sorted[j]
+                    if idx_b in suppressed:
+                        continue
+                    iom = SonarTiler._compute_iom(boxes[idx_a], boxes[idx_b])
+                    if iom >= iom_threshold:
+                        suppressed.add(idx_b)
+
+            for idx in c_kept_sorted:
+                if idx not in suppressed:
+                    keep_indices.append(idx)
 
         # Sort all kept indices across all classes by confidence score descending
         keep_indices = sorted(keep_indices, key=lambda i: float(scores[i]), reverse=True)
@@ -192,17 +233,17 @@ class SonarTiler:
     def cross_class_nms(
         boxes: List[List[int]],
         scores: List[float],
-        iou_threshold: float = 0.50
+        iou_threshold: float = 0.45,
+        iom_threshold: float = 0.50
     ) -> List[int]:
         """
         Suppresses redundant overlapping bounding boxes across different classes
-        when two distinct classes claim the exact same physical anomaly (IoU >= iou_threshold).
+        when two distinct classes claim the exact same physical anomaly (IoU or IoM >= threshold).
         Resolves classification conflict by strictly keeping the candidate with higher confidence.
         """
         if len(boxes) <= 1:
             return list(range(len(boxes)))
 
-        # Convert [x1, y1, x2, y2] to cv2 [x, y, w, h] format
         cv_boxes = []
         for b in boxes:
             x1, y1, x2, y2 = b
@@ -215,6 +256,23 @@ class SonarTiler:
             nms_threshold=float(iou_threshold)
         )
 
-        if len(indices) > 0:
-            return [int(i) for i in np.array(indices).flatten()]
-        return []
+        kept = [int(i) for i in np.array(indices).flatten()] if len(indices) > 0 else []
+        kept_sorted = sorted(kept, key=lambda i: float(scores[i]), reverse=True)
+
+        # Further suppress any cross-class nested containment (IoM >= iom_threshold)
+        final_kept = []
+        suppressed = set()
+        for i in range(len(kept_sorted)):
+            idx_a = kept_sorted[i]
+            if idx_a in suppressed:
+                continue
+            final_kept.append(idx_a)
+            for j in range(i + 1, len(kept_sorted)):
+                idx_b = kept_sorted[j]
+                if idx_b in suppressed:
+                    continue
+                iom = SonarTiler._compute_iom(boxes[idx_a], boxes[idx_b])
+                if iom >= iom_threshold:
+                    suppressed.add(idx_b)
+
+        return final_kept

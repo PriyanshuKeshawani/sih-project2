@@ -578,7 +578,7 @@ function renderInteractiveOverlays() {
     }
 
     tagDiv.className = tagClasses.join(" ");
-    tagDiv.innerHTML = `<span>${statusIcon} ${shortName} ${confText}</span>`;
+    tagDiv.innerHTML = `<span>${shortName} ${confText}</span>`;
     tagDiv.title = `${cautiousLabel} (${confText}) | ${pStatus} [${d.track_id || d.detection_id}]`;
 
     bboxDiv.title = `Click to inspect: ${cautiousLabel} (${confText})`;
