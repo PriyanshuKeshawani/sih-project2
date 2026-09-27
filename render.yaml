@@ -12,6 +12,8 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.12
+      - key: APP_MODE
+        value: production
       - key: SARVAM_API_KEY
         sync: false
       - key: SARVAM_MODEL

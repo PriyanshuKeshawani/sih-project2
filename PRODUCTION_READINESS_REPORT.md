@@ -173,8 +173,9 @@ For live deployment on National Institute of Ocean Technology (NIOT) / Indian Na
 ## 12. Remaining Real-World Blockers
 
 1. **Real-Time Sonar Serial Driver:** The live sonar hardware adapter (`FutureLiveSonarSource` in `engine/sources.py`) is architected as an interface and safely returns `UNAVAILABLE`. Direct hardware integration requires vendor-specific SDK drivers (e.g., Klein, Edgetech, or Imagenex).
-2. **Model Re-Training on Real Indian Coastal Sonar:** The current detector model is trained on 5 anomaly classes from benchmark datasets. Fine-tuning on native Arabian Sea / Bay of Bengal bathymetry and clutter will enhance detection fidelity.
+2. **Model Re-Training on Real Indian Coastal Sonar:** The current primary detector (`models/best_detector.onnx`, 5 classes) is trained on benchmark datasets. Fine-tuning on native Arabian Sea / Bay of Bengal bathymetry and clutter will enhance detection fidelity.
 3. **Subsea Edge Compute:** Deployment inside a compact AUV payload pressure vessel requires porting ONNX Runtime to NVIDIA Jetson (TensorRT execution provider) for low-power subsea operations.
+4. **Experimental AI4Shipwrecks Model Status:** `models/best_shipwreck_detector.onnx` is an auxiliary single-class research export (30 epochs, mAP50: 0.348, mAP50-95: 0.150). The production pipeline defaults to the 5-class `models/best_detector.onnx`, and `engine/detector.py` now enforces runtime ONNX metadata extraction and dimension guards to prevent silent mislabeling.
 
 ---
 
@@ -209,4 +210,4 @@ OK
 - **Test 19: No Fabricated Measurements** — Prohibits default elevation/depth numbers $\to$ **PASS**
 - **Test 20: Component Status Correctness** — Verifies verified status enums $\to$ **PASS**
 
-**Total Test Suite Execution:** 216 Tests passing across entire repository.
+**Total Test Suite Execution:** Verified 216 Tests passing across the entire repository (`python -m unittest discover tests` $\to$ `Ran 216 tests ... OK`), with complete offline fixture isolation, mock client hooks, and zero network flakiness.

@@ -18,24 +18,37 @@ env/
 .venv/
 ENV/
 
-# Large Model Checkpoints (>100MB Git limit)
-# Note: models/best_detector.onnx is 42MB and tracked.
-# models/laya/checkpoint/model.safetensors is ~804MB; download at runtime/build via HuggingFace or Git LFS.
+# Large Model Checkpoints & Training Weights
+# Note: models/best_detector.onnx is the verified production detector.
 models/laya/checkpoint/*.safetensors
 models/laya/hf_cache/
 models/.cache/
+models/best_shipwreck_detector.onnx
+*.pt
+weights/
+runs/
+
+# Datasets & Local Training Artifacts
+AI4Shipwrecks/
+reports/ai4shipwrecks_test_eval/
+
+# Competitor Research & Analysis Clones
+competitors/
+
+# Local IDE, Agent & Tooling Directories
+.kilo/
+.vscode/
+.idea/
+*.swp
+*.swo
 
 # Operating System
 .DS_Store
 Thumbs.db
 ehthumbs.db
 
-# IDE & Editor files
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Temporary replays & debug logs
+# Temporary replays, debug logs & extractions
 reports/phase8/replays/REPLAY_*.json
 scripts/temp_*.py
+scripts/install_*.py
+extracted_pdf.txt

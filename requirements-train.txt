@@ -1,0 +1,9 @@
+# Model training and fine-tuning dependencies
+# Use: pip install -r requirements-train.txt
+-r requirements.txt
+ultralytics>=8.0.0
+torch>=2.0.0
+torchvision>=0.15.0
+polars>=0.20.0
+matplotlib>=3.7.0
+scipy>=1.10.0
