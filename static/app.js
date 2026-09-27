@@ -22,8 +22,45 @@ let currentFilters = {
 // Mission event timeline (Section 10)
 let timelineEvents = [];
 
+/**
+ * Resolves a CSS custom property to its computed color value.
+ * Leaflet (canvas/SVG/DOM) and other presentation APIs do not resolve
+ * `var(--token)` strings, so they must receive concrete color values.
+ */
+function cssVar(name, fallback) {
+  const fallbackVal = fallback || "#00e5ff";
+  if (typeof window === "undefined" || !window.getComputedStyle) return fallbackVal;
+  try {
+    const resolved = getComputedStyle(document.documentElement)
+      .getPropertyValue(String(name))
+      .trim();
+    return resolved || fallbackVal;
+  } catch (err) {
+    return fallbackVal;
+  }
+}
+
+/**
+ * Formats a 0..1 confidence as a percentage string.
+ * Returns a placeholder when the backend omits a numeric confidence so a
+ * missing field can never crash a render pass or be shown as "0.0%".
+ */
+function confidencePct(value, decimals) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return "--";
+  const places = Number.isInteger(decimals) ? decimals : 1;
+  return `${(num * 100).toFixed(places)}%`;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
-  initMap();
+  // A Leaflet failure (offline tiles, missing container, blocked script)
+  // must not abort the rest of cockpit initialisation.
+  try {
+    initMap();
+  } catch (err) {
+    console.error("Map initialisation failed; continuing without GIS layer:", err);
+  }
+
   loadSamples();
   setupEventListeners();
   fetchSystem1Status();
@@ -106,6 +143,102 @@ function initMap() {
 // 3. Samples & Event Handlers
 // =====================================================================
 
+let currentZoom = 1.0;
+
+function applyZoom(delta) {
+  if (delta === 0) {
+    currentZoom = 1.0;
+  } else {
+    currentZoom = Math.min(Math.max(currentZoom + delta, 0.6), 2.5);
+  }
+  const imgElem = document.getElementById("annotated-image");
+  if (imgElem) {
+    imgElem.style.transform = currentZoom === 1.0 ? "none" : `scale(${currentZoom})`;
+    imgElem.style.transformOrigin = "top center";
+    setTimeout(() => {
+      updateOverlayContainerGeometry();
+      renderInteractiveOverlays();
+    }, 50);
+  }
+}
+
+function setupTabNavigation() {
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn").forEach(b => {
+        b.classList.remove("active");
+        b.setAttribute("aria-selected", "false");
+      });
+      document.querySelectorAll(".tab-pane").forEach(pane => {
+        pane.classList.remove("active");
+      });
+
+      btn.classList.add("active");
+      btn.setAttribute("aria-selected", "true");
+
+      const targetPane = document.getElementById(btn.dataset.tab);
+      if (targetPane) {
+        targetPane.classList.add("active");
+      }
+
+      if (btn.dataset.tab === "tab-geo" && map) {
+        setTimeout(() => {
+          map.invalidateSize();
+        }, 120);
+      }
+    });
+  });
+}
+
+function setupExportHandlers() {
+  const jsonBtn = document.getElementById("btn-export-json");
+  if (jsonBtn) {
+    jsonBtn.addEventListener("click", () => {
+      if (!currentDetections || currentDetections.length === 0) {
+        alert("No detections available to export.");
+        return;
+      }
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentDetections, null, 2));
+      const downloadAnchor = document.createElement("a");
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `samudra_sonar_detections_${Date.now()}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    });
+  }
+
+  const csvBtn = document.getElementById("btn-export-csv");
+  if (csvBtn) {
+    csvBtn.addEventListener("click", () => {
+      if (!currentDetections || currentDetections.length === 0) {
+        alert("No detections available to export.");
+        return;
+      }
+      const headers = ["detection_id", "class", "confidence", "persistence_status", "elevation_m", "depth_m", "track_id", "lat", "lon"];
+      const rows = currentDetections.map(d => [
+        d.detection_id || "",
+        d.class || "",
+        d.confidence || "",
+        d.persistence_status || "",
+        d.elevation_m || "",
+        d.geo?.depth_m || "",
+        d.track_id || "",
+        d.geo?.lat || "",
+        d.geo?.lon || ""
+      ]);
+      const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `samudra_sonar_contacts_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    });
+  }
+}
+
 async function loadSamples() {
   try {
     const res = await fetch("/api/samples");
@@ -121,6 +254,8 @@ async function loadSamples() {
       if (idx === 0) {
         btn.classList.add("active");
         selectedSampleId = s.id;
+        const dsName = document.getElementById("current-dataset-name");
+        if (dsName) dsName.textContent = s.label.toUpperCase();
       }
 
       btn.addEventListener("click", () => {
@@ -129,6 +264,8 @@ async function loadSamples() {
         selectedSampleId = s.id;
         uploadedFile = null;
         document.getElementById("custom-file-input").value = "";
+        const dsName = document.getElementById("current-dataset-name");
+        if (dsName) dsName.textContent = s.label.toUpperCase();
         triggerScan();
       });
 
@@ -196,6 +333,18 @@ function setupEventListeners() {
       triggerScan();
     }
   });
+
+  // The upload control is a <label role="button">, so it does not receive
+  // native keyboard activation. Forward Enter/Space to the hidden file input.
+  const uploadBtn = document.querySelector(".upload-btn");
+  if (uploadBtn && fileInput) {
+    uploadBtn.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+        e.preventDefault();
+        fileInput.click();
+      }
+    });
+  }
 
   document.getElementById("scan-btn").addEventListener("click", () => {
     triggerScan();
@@ -274,6 +423,20 @@ function setupEventListeners() {
       if (terminalOut) terminalOut.innerHTML = "";
     });
   }
+
+  // Tab navigation
+  setupTabNavigation();
+
+  // Viewport Zoom controls
+  const btnZoomIn = document.getElementById("btn-zoom-in");
+  if (btnZoomIn) btnZoomIn.addEventListener("click", () => applyZoom(0.25));
+  const btnZoomOut = document.getElementById("btn-zoom-out");
+  if (btnZoomOut) btnZoomOut.addEventListener("click", () => applyZoom(-0.25));
+  const btnZoomReset = document.getElementById("btn-zoom-reset");
+  if (btnZoomReset) btnZoomReset.addEventListener("click", () => applyZoom(0));
+
+  // Structured Export handlers (PDF, JSON, CSV)
+  setupExportHandlers();
 }
 
 // =====================================================================
@@ -348,11 +511,11 @@ async function pollServerLogs() {
 async function triggerScan() {
   const timer = document.getElementById("scan-timer");
   timer.textContent = "PROCESSING...";
-  timer.style.color = "var(--cyan-accent)";
+  timer.style.color = cssVar("--cyan-accent", "#00e5ff");
 
   const formData = new FormData();
-  const altitude = document.getElementById("altitude-slider").value;
-  formData.append("altitude", altitude);
+  const altitudeEl = document.getElementById("altitude-slider");
+  formData.append("altitude", altitudeEl ? altitudeEl.value : "12.0");
 
   const confSlider = document.getElementById("conf-slider");
   const confThreshold = confSlider ? confSlider.value : "0.30";
@@ -373,8 +536,14 @@ async function triggerScan() {
 
   const startTime = performance.now();
 
-  const scanBtn = document.getElementById("btn-trigger-scan");
-  if (scanBtn) scanBtn.disabled = true;
+  // NOTE: element id is "scan-btn" in index.html.
+  const scanBtn = document.getElementById("scan-btn");
+  const setScanBusy = (busy) => {
+    if (!scanBtn) return;
+    scanBtn.disabled = busy;
+    scanBtn.setAttribute("aria-busy", busy ? "true" : "false");
+  };
+  setScanBusy(true);
 
   try {
     const res = await fetch("/api/scan", {
@@ -391,7 +560,7 @@ async function triggerScan() {
     const duration = (performance.now() - startTime).toFixed(1);
 
     timer.textContent = `${duration} ms (ONLINE)`;
-    timer.style.color = "var(--green-neon)";
+    timer.style.color = cssVar("--green-neon", "#00ff9d");
 
     if (data.logs) {
       handleServerLogs(data.logs);
@@ -401,9 +570,9 @@ async function triggerScan() {
   } catch (err) {
     console.error(err);
     timer.textContent = "SCAN ERROR";
-    timer.style.color = "var(--red-neon)";
+    timer.style.color = cssVar("--red-neon", "#ff3b5c");
   } finally {
-    if (scanBtn) scanBtn.disabled = false;
+    setScanBusy(false);
   }
 }
 
@@ -451,17 +620,26 @@ function renderResults(data) {
   }
 
   // 2. Update System 1 Reflex HUD (Section 8)
-  document.getElementById("latency-tag").textContent = `${summary.edge_latency_ms} ms (EDGE)`;
+  const s1Summary = summary || {};
+  const reflexPrimitive = typeof s1Summary.system1_reflex === "string" ? s1Summary.system1_reflex : "";
+  const maxHazard = Number.isFinite(s1Summary.max_hazard_score) ? s1Summary.max_hazard_score : 0;
+  document.getElementById("latency-tag").textContent = `${s1Summary.edge_latency_ms ?? "--"} ms (EDGE)`;
   const decisionBadge = document.getElementById("decision-primitive");
-  decisionBadge.textContent = summary.system1_reflex;
+  decisionBadge.textContent = reflexPrimitive || "NO DECISION";
   decisionBadge.className = "decision-badge " + (
-    summary.system1_reflex.includes("EMERGENCY") ? "badge-critical" :
-    summary.system1_reflex.includes("RESCAN") ? "badge-rescan" : "badge-nominal"
+    reflexPrimitive.includes("EMERGENCY") ? "badge-critical" :
+    reflexPrimitive.includes("RESCAN") ? "badge-rescan" : "badge-nominal"
   );
 
-  document.getElementById("recommended-maneuver").textContent = summary.system1_maneuver;
-  document.getElementById("hazard-score").textContent = `${summary.max_hazard_score} / 10.0`;
-  document.getElementById("hazard-progress").style.width = `${summary.max_hazard_score * 10}%`;
+  document.getElementById("recommended-maneuver").textContent = s1Summary.system1_maneuver || "AWAITING SYSTEM 1";
+  const clampedHazard = Math.min(Math.max(maxHazard, 0), 10);
+  document.getElementById("hazard-score").textContent = `${maxHazard} / 10.0`;
+  const hazardProgress = document.getElementById("hazard-progress");
+  hazardProgress.style.transform = `scaleX(${clampedHazard / 10})`;
+  const hazardTrack = hazardProgress.closest(".progress-track");
+  if (hazardTrack) {
+    hazardTrack.setAttribute("aria-valuenow", String(clampedHazard));
+  }
 
   if (data.system1) {
     const s1 = data.system1;
@@ -497,6 +675,9 @@ function renderResults(data) {
   // 5. Apply UI Filters & Render Specs Table (Section 12)
   applyUIFilters();
 
+  // 5.5. Render Detected Objects List in Right Column
+  renderDetectedObjectsList(currentDetections);
+
   // 6. Automatically select primary detection if available
   if (currentDetections.length > 0) {
     selectDetection(currentDetections[0].detection_id || "det_001");
@@ -506,6 +687,82 @@ function renderResults(data) {
 
   // 7. Update System 2 Tactical Reasoning Panel
   triggerSystem2Analysis(data);
+}
+
+function renderDetectedObjectsList(detections) {
+  const container = document.getElementById("detections-items");
+  const empty = document.getElementById("detections-list-empty");
+  const badge = document.getElementById("detection-count-badge");
+  const quickContacts = document.getElementById("quick-contacts-val");
+  const quickStatus = document.getElementById("quick-status-val");
+  const quickGeo = document.getElementById("quick-geo-val");
+
+  const count = detections ? detections.length : 0;
+  if (badge) badge.textContent = `${count} CONTACT${count === 1 ? '' : 'S'}`;
+  if (quickContacts) quickContacts.textContent = String(count);
+  if (quickStatus) quickStatus.textContent = "COMPLETE";
+
+  const hasGeo = detections && detections.some(d => isValidLatLon(d.geo?.lat, d.geo?.lon));
+  if (quickGeo) {
+    quickGeo.textContent = hasGeo ? "GEOLOCATED" : "IMAGE-SPACE ONLY";
+    quickGeo.style.color = hasGeo ? "var(--green-neon)" : "var(--text-muted)";
+  }
+
+  if (!container || !empty) return;
+
+  if (!detections || detections.length === 0) {
+    empty.style.display = "block";
+    container.style.display = "none";
+    container.innerHTML = "";
+    return;
+  }
+
+  empty.style.display = "none";
+  container.style.display = "flex";
+  container.innerHTML = "";
+
+  detections.forEach(d => {
+    const row = document.createElement("div");
+    row.className = "detection-row-item";
+    if (d.detection_id === selectedDetectionId) {
+      row.classList.add("selected");
+    }
+    row.dataset.id = d.detection_id;
+
+    const left = document.createElement("div");
+    left.className = "det-info-left";
+
+    const name = document.createElement("span");
+    name.className = "det-name";
+    name.textContent = getShortLabel(d.class);
+
+    const conf = document.createElement("span");
+    conf.className = "det-conf";
+    conf.textContent = confidencePct(d.confidence, 1);
+
+    left.appendChild(name);
+    left.appendChild(conf);
+
+    const right = document.createElement("div");
+    const pStatus = d.persistence_status || "NEW_CONTACT";
+    const statusBadge = document.createElement("span");
+    statusBadge.className = `status-badge ${getPersistenceBadgeClass(pStatus)}`;
+    statusBadge.textContent = pStatus;
+    right.appendChild(statusBadge);
+
+    row.appendChild(left);
+    row.appendChild(right);
+
+    row.addEventListener("click", () => {
+      selectDetection(d.detection_id);
+      const detailsTabBtn = document.getElementById("tab-btn-details");
+      if (detailsTabBtn && !detailsTabBtn.classList.contains("active")) {
+        detailsTabBtn.click();
+      }
+    });
+
+    container.appendChild(row);
+  });
 }
 
 // =====================================================================
@@ -569,7 +826,7 @@ function renderInteractiveOverlays() {
     // Cautious terminology & compact professional display
     const cautiousLabel = getCautiousLabel(d.class);
     const shortName = getShortLabel(d.class);
-    const confText = `${(d.confidence * 100).toFixed(0)}%`;
+    const confText = confidencePct(d.confidence, 0);
     const pStatus = d.persistence_status || "NEW_CONTACT";
     const statusIcon = getPersistenceIcon(pStatus);
 
@@ -587,7 +844,9 @@ function renderInteractiveOverlays() {
     }
 
     tagDiv.className = tagClasses.join(" ");
-    tagDiv.innerHTML = `<span>${shortName} ${confText}</span>`;
+    const tagText = document.createElement("span");
+    tagText.textContent = `${shortName} ${confText}`;
+    tagDiv.appendChild(tagText);
     tagDiv.title = `${cautiousLabel} (${confText}) | ${pStatus} [${d.track_id || d.detection_id}]`;
 
     bboxDiv.title = `Click to inspect: ${cautiousLabel} (${confText})`;
@@ -656,7 +915,7 @@ function selectDetection(detId) {
     track_age_s: d.track_age_s || 0.0,
     first_seen: new Date().toISOString(),
     last_seen: new Date().toISOString(),
-    confidence_history: [d.confidence],
+    confidence_history: Number.isFinite(Number(d.confidence)) ? [Number(d.confidence)] : [],
     persistence_status: d.persistence_status || "NEW_CONTACT",
     audit_log: []
   };
@@ -676,13 +935,20 @@ function selectDetection(detId) {
   statusEl.title = "PERSISTENT = same sonar contact observed consistently across multiple scans.";
 
   document.getElementById("insp-obs-count").textContent = `${track.observation_count || d.observation_count || 1} observations`;
-  document.getElementById("insp-track-age").textContent = `${(track.track_age_s || d.track_age_s || 0.0).toFixed(1)}s`;
+  const trackAge = Number(track.track_age_s ?? d.track_age_s);
+  document.getElementById("insp-track-age").textContent =
+    `${Number.isFinite(trackAge) ? trackAge.toFixed(1) : "0.0"}s`;
   document.getElementById("insp-first-seen").textContent = formatTimeOnly(track.first_seen);
   document.getElementById("insp-last-seen").textContent = formatTimeOnly(track.last_seen);
-  document.getElementById("insp-current-conf").textContent = `${(d.confidence * 100).toFixed(1)}%`;
+  document.getElementById("insp-current-conf").textContent = confidencePct(d.confidence, 1);
 
   // Render Confidence History Sparkline (Section 5)
-  renderConfidenceSparkline(track.confidence_history || [d.confidence]);
+  const history = Array.isArray(track.confidence_history)
+    ? track.confidence_history.filter(v => Number.isFinite(Number(v)))
+    : [];
+  renderConfidenceSparkline(
+    history.length > 0 ? history : (Number.isFinite(Number(d.confidence)) ? [Number(d.confidence)] : [])
+  );
 
   // Render Measurement Provenance Matrix (Section 7)
   renderProvenanceMatrix(d);
@@ -715,10 +981,19 @@ function getPersistenceBadgeClass(status) {
 function renderConfidenceSparkline(history) {
   const svg = document.getElementById("confidence-sparkline");
   const valuesEl = document.getElementById("sparkline-values");
-  if (!svg || !history || history.length === 0) return;
+  if (!svg) return;
 
-  const pointsText = history.map(c => (c * 100).toFixed(0) + "%").join(" → ");
-  valuesEl.textContent = pointsText;
+  const series = (Array.isArray(history) ? history : [])
+    .map(v => Number(v))
+    .filter(v => Number.isFinite(v));
+  if (series.length === 0) {
+    if (valuesEl) valuesEl.textContent = "No confidence history recorded.";
+    return;
+  }
+
+  if (valuesEl) {
+    valuesEl.textContent = series.map(c => `${(c * 100).toFixed(0)}%`).join(" → ");
+  }
 
   const width = svg.clientWidth || 300;
   const height = 40;
@@ -727,10 +1002,10 @@ function renderConfidenceSparkline(history) {
 
   const minVal = 0.3;
   const maxVal = 1.0;
-  const n = history.length;
+  const n = series.length;
   const stepX = n > 1 ? (width - 40) / (n - 1) : 0;
 
-  const coords = history.map((val, idx) => {
+  const coords = series.map((val, idx) => {
     const x = 20 + idx * stepX;
     const normalized = Math.max(0, Math.min(1, (val - minVal) / (maxVal - minVal)));
     const y = height - 10 - normalized * (height - 20);
@@ -753,7 +1028,7 @@ function renderConfidenceSparkline(history) {
     const pts = coords.map(p => `${p.x},${p.y}`).join(" ");
     polyline.setAttribute("points", pts);
     polyline.setAttribute("fill", "none");
-    polyline.setAttribute("stroke", "var(--cyan-accent)");
+    polyline.setAttribute("stroke", cssVar("--cyan-accent", "#00e5ff"));
     polyline.setAttribute("stroke-width", "2");
     svg.appendChild(polyline);
   }
@@ -764,7 +1039,7 @@ function renderConfidenceSparkline(history) {
     circle.setAttribute("cx", p.x);
     circle.setAttribute("cy", p.y);
     circle.setAttribute("r", "3.5");
-    circle.setAttribute("fill", "var(--green-neon)");
+    circle.setAttribute("fill", cssVar("--green-neon", "#00ff9d"));
     circle.setAttribute("stroke", "#060b18");
     circle.setAttribute("stroke-width", "1.5");
     svg.appendChild(circle);
@@ -774,7 +1049,7 @@ function renderConfidenceSparkline(history) {
     txt.setAttribute("x", p.x);
     txt.setAttribute("y", p.y - 6);
     txt.setAttribute("font-size", "9");
-    txt.setAttribute("font-family", "var(--font-mono)");
+    txt.setAttribute("font-family", cssVar("--font-mono", "monospace"));
     txt.setAttribute("fill", "#cbd5e1");
     txt.setAttribute("text-anchor", "middle");
     txt.textContent = `${(p.val * 100).toFixed(0)}%`;
@@ -784,10 +1059,15 @@ function renderConfidenceSparkline(history) {
 
 // Section 7: Measurement Provenance Breakdown
 function renderProvenanceMatrix(d) {
-  document.getElementById("prov-elevation").textContent = `${d.elevation_m} m`;
-  document.getElementById("prov-depth").textContent = d.geo ? `${d.geo.depth_m} m` : "Unavailable";
-  
-  const hasGps = d.geo && d.geo.lat !== null && d.geo.lon !== null;
+  const elevation = Number.isFinite(d.elevation_m) ? d.elevation_m : null;
+  const depth = Number.isFinite(d.geo?.depth_m) ? d.geo.depth_m : null;
+
+  document.getElementById("prov-elevation").textContent =
+    elevation === null ? "Unavailable" : `${elevation} m`;
+  document.getElementById("prov-depth").textContent =
+    depth === null ? "Unavailable" : `${depth} m`;
+
+  const hasGps = isValidLatLon(d.geo?.lat, d.geo?.lon);
   const gpsVal = document.getElementById("prov-gps");
   const gpsBadge = document.getElementById("prov-gps-badge");
 
@@ -803,8 +1083,11 @@ function renderProvenanceMatrix(d) {
     gpsBadge.title = "No GPS telemetry available for this contact";
   }
 
-  document.getElementById("prov-shadow").textContent = d.elevation_m > 0 ? "Acoustic Shadow Present" : "No Shadow Highlight";
-  document.getElementById("prov-altitude").textContent = `${document.getElementById("altitude-slider").value} m`;
+  document.getElementById("prov-shadow").textContent =
+    elevation !== null && elevation > 0 ? "Acoustic Shadow Present" : "No Shadow Highlight";
+  const altitudeSlider = document.getElementById("altitude-slider");
+  document.getElementById("prov-altitude").textContent =
+    `${altitudeSlider ? altitudeSlider.value : "--"} m`;
 }
 
 // Section 11: Audit Trail Display
@@ -915,6 +1198,14 @@ function highlightActiveElements(detId) {
       row.classList.remove("selected-row");
     }
   });
+  // Update detected objects list items
+  document.querySelectorAll(".detection-row-item").forEach(item => {
+    if (item.dataset.id === detId) {
+      item.classList.add("selected");
+    } else {
+      item.classList.remove("selected");
+    }
+  });
 }
 
 // =====================================================================
@@ -936,7 +1227,7 @@ function recordScanTimelineEvents(detections) {
     const label = getCautiousLabel(d.class);
 
     if (obsCount === 1) {
-      addTimelineEvent("NEW_CONTACT", `NEW_CONTACT — ${label} (${(d.confidence * 100).toFixed(0)}%) [${d.track_id || d.detection_id}]`, timeStr);
+      addTimelineEvent("NEW_CONTACT", `NEW_CONTACT — ${label} (${confidencePct(d.confidence, 0)}) [${d.track_id || d.detection_id || "det_000"}]`, timeStr);
     } else if (pStatus === "PERSISTENT" && obsCount === 3) {
       addTimelineEvent("PERSISTENT", `PERSISTENT — ${label} confirmed across 3 observations [${d.track_id}]`, timeStr);
     } else {
@@ -948,7 +1239,7 @@ function recordScanTimelineEvents(detections) {
   if (detections[0]?.reflex?.decision_primitive) {
     const prim = detections[0].reflex.decision_primitive;
     if (prim.includes("EMERGENCY")) {
-      addTimelineEvent("SYSTEM1", `SYSTEM 1 ALERT → ${prim} (Hazard: ${detections[0].reflex.hazard_score})`, timeStr);
+      addTimelineEvent("SYSTEM1", `SYSTEM 1 ALERT → ${prim} (Hazard: ${detections[0]?.reflex?.hazard_score ?? "n/a"})`, timeStr);
     }
   }
 }
@@ -986,11 +1277,22 @@ function renderTimeline() {
     if (e.type === "OPERATOR") icon = "👤";
     if (e.type === "SWEEP") icon = "🌊";
 
-    li.innerHTML = `
-      <span class="timeline-time font-mono">${e.time}</span>
-      <span class="timeline-badge-icon" aria-hidden="true">${icon}</span>
-      <span class="timeline-desc">${e.message}</span>
-    `;
+    const timeSpan = document.createElement("span");
+    timeSpan.className = "timeline-time font-mono";
+    timeSpan.textContent = e.time;
+
+    const iconSpan = document.createElement("span");
+    iconSpan.className = "timeline-badge-icon";
+    iconSpan.setAttribute("aria-hidden", "true");
+    iconSpan.textContent = icon;
+
+    const descSpan = document.createElement("span");
+    descSpan.className = "timeline-desc";
+    descSpan.textContent = e.message;
+
+    li.appendChild(timeSpan);
+    li.appendChild(iconSpan);
+    li.appendChild(descSpan);
     container.appendChild(li);
   });
 }
@@ -999,35 +1301,76 @@ function renderTimeline() {
 // 9. Map Telemetry & Breadcrumbs (Section 6, 16)
 // =====================================================================
 
-function renderMapTelemetry() {
-  markerLayer.clearLayers();
-  breadcrumbLayer.clearLayers();
+function isValidLatLon(lat, lon) {
+  return Number.isFinite(lat) && Number.isFinite(lon) &&
+    lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
+}
 
+function buildMapPopup(d) {
+  const displayClass = getCautiousLabel(d.class);
+  const pStatus = d.persistence_status || "NEW_CONTACT";
+  const elevation = Number.isFinite(d.elevation_m) ? `${d.elevation_m} m above seabed` : "Elevation unavailable";
+  const depth = Number.isFinite(d.geo?.depth_m) ? `${d.geo.depth_m} m` : "Depth unavailable";
+  const zone = d.geo?.zone || "Zone unavailable";
+
+  const root = document.createElement("div");
+  root.style.fontFamily = cssVar("--font-mono", "monospace");
+  root.style.fontSize = "11px";
+
+  const heading = document.createElement("b");
+  heading.textContent = `${(d.detection_id || "ANOMALY").toUpperCase()}: ${displayClass}`;
+  root.appendChild(heading);
+  root.appendChild(document.createElement("br"));
+
+  const persistence = document.createElement("b");
+  persistence.textContent = `Persistence: ${pStatus}`;
+  root.appendChild(persistence);
+  root.appendChild(document.createElement("br"));
+
+  [
+    `Confidence: ${confidencePct(d.confidence)}`,
+    `${elevation} [DERIVED]`,
+    `Depth: ${depth} [DERIVED]`,
+    `Sector: ${zone} [DEMO]`
+  ].forEach(line => {
+    root.appendChild(document.createTextNode(line));
+    root.appendChild(document.createElement("br"));
+  });
+
+  return root;
+}
+
+function renderMapTelemetry() {
   const banner = document.getElementById("gps-unavailable-banner");
   const gpsDisplay = document.getElementById("gps-coords");
 
-  const hasAnyGps = currentDetections.some(d => d.geo && d.geo.lat !== null && d.geo.lon !== null);
+  const primary = currentDetections.find(d => isValidLatLon(d.geo?.lat, d.geo?.lon));
 
-  if (!hasAnyGps) {
+  if (!primary) {
     if (banner) banner.style.display = "block";
     if (gpsDisplay) gpsDisplay.textContent = "GPS UNAVAILABLE";
-    return;
+  } else {
+    if (banner) banner.style.display = "none";
+    if (gpsDisplay) {
+      gpsDisplay.textContent = `LAT: ${primary.geo.lat.toFixed(4)}° N | LON: ${primary.geo.lon.toFixed(4)}° E [DEMO]`;
+    }
   }
 
-  if (banner) banner.style.display = "none";
+  // Provenance stays accurate when Leaflet, the map, or its layers failed to init.
+  if (typeof L === "undefined" || !map || !markerLayer || !breadcrumbLayer) return;
 
-  const primary = currentDetections[0];
-  if (gpsDisplay && primary.geo) {
-    gpsDisplay.textContent = `LAT: ${primary.geo.lat.toFixed(4)}° N | LON: ${primary.geo.lon.toFixed(4)}° E [DEMO]`;
-  }
+  markerLayer.clearLayers();
+  breadcrumbLayer.clearLayers();
 
   // Draw detection markers
   const filtered = getFilteredDetections();
   filtered.forEach(d => {
-    if (!d.geo || d.geo.lat === null || d.geo.lon === null) return;
+    if (!isValidLatLon(d.geo?.lat, d.geo?.lon)) return;
 
     const isCritical = d.class === 'ghost_net' || d.class === 'mine_cylinder';
-    const markerColor = isCritical ? 'var(--red-neon)' : 'var(--orange-neon)';
+    const markerColor = isCritical
+      ? cssVar("--red-neon", "#ff2d55")
+      : cssVar("--orange-neon", "#ff9100");
 
     const pin = L.circleMarker([d.geo.lat, d.geo.lon], {
       radius: 8,
@@ -1038,31 +1381,21 @@ function renderMapTelemetry() {
       fillOpacity: 0.85
     });
 
-    const displayClass = getCautiousLabel(d.class);
-    const pStatus = d.persistence_status || "NEW_CONTACT";
-
-    pin.bindPopup(`
-      <div style="font-family: monospace; font-size: 11px;">
-        <b>${(d.detection_id || 'ANOMALY').toUpperCase()}: ${displayClass}</b><br/>
-        <b>Persistence: ${pStatus}</b><br/>
-        Confidence: ${(d.confidence * 100).toFixed(1)}%<br/>
-        Elevation: ${d.elevation_m}m above seabed [DERIVED]<br/>
-        Depth: ${d.geo.depth_m}m [DERIVED]<br/>
-        Sector: ${d.geo.zone} [DEMO]
-      </div>
-    `).addTo(markerLayer);
+    pin.bindPopup(buildMapPopup(d)).addTo(markerLayer);
   });
 
   // Draw track breadcrumbs for persistent or multi-observation tracks (Section 6)
   currentTracks.forEach(track => {
     if (track.positions && track.positions.length > 1) {
       const latlngs = track.positions
-        .filter(p => p && p.lat !== null && p.lon !== null)
+        .filter(p => isValidLatLon(p?.lat, p?.lon))
         .map(p => [p.lat, p.lon]);
 
       if (latlngs.length > 1) {
         L.polyline(latlngs, {
-          color: track.persistence_status === "PERSISTENT" ? "var(--green-neon)" : "var(--cyan-dim)",
+          color: track.persistence_status === "PERSISTENT"
+            ? cssVar("--green-neon", "#00ff9d")
+            : cssVar("--cyan-dim", "#0aa2b8"),
           weight: 2.5,
           dashArray: "4, 4",
           opacity: 0.8
@@ -1071,7 +1404,7 @@ function renderMapTelemetry() {
     }
   });
 
-  if (primary.geo && primary.geo.lat !== null) {
+  if (map && primary && Number.isFinite(primary.geo.lat) && Number.isFinite(primary.geo.lon)) {
     map.panTo([primary.geo.lat, primary.geo.lon]);
   }
 }
@@ -1114,6 +1447,7 @@ function applyUIFilters() {
 
 function renderSpecsTable(detections) {
   const tbody = document.getElementById("specs-tbody");
+  if (!tbody) return;
   tbody.innerHTML = "";
 
   if (detections && detections.length > 0) {
@@ -1127,15 +1461,51 @@ function renderSpecsTable(detections) {
         tr.classList.add("selected-row");
       }
 
-      tr.innerHTML = `
-        <td style="font-family: var(--font-mono); color: var(--cyan-accent); font-weight:600;">${d.detection_id || 'det_000'}</td>
-        <td style="color: ${d.class === 'ghost_net' ? 'var(--red-neon)' : 'var(--cyan-accent)'}; font-weight:600;">${displayClass}</td>
-        <td><span class="status-badge ${getPersistenceBadgeClass(pStatus)}">${icon} ${pStatus}</span></td>
-        <td>${(d.confidence * 100).toFixed(1)}%</td>
-        <td>${d.elevation_m} m <span class="prov-tag prov-derived font-small">DERIVED</span></td>
-        <td>${d.geo ? d.geo.depth_m : '--'} m</td>
-        <td><span class="font-small text-muted font-mono">${d.track_id || 'TRK-001'}</span></td>
-      `;
+      const idCell = document.createElement("td");
+      idCell.style.fontFamily = cssVar("--font-mono", "monospace");
+      idCell.style.color = cssVar("--cyan-accent", "#00e5ff");
+      idCell.style.fontWeight = "600";
+      idCell.textContent = d.detection_id || "det_000";
+
+      const classCell = document.createElement("td");
+      classCell.style.color = d.class === "ghost_net"
+        ? cssVar("--red-neon", "#ff2d55")
+        : cssVar("--cyan-accent", "#00e5ff");
+      classCell.style.fontWeight = "600";
+      classCell.textContent = displayClass;
+
+      const statusCell = document.createElement("td");
+      const statusBadge = document.createElement("span");
+      statusBadge.className = `status-badge ${getPersistenceBadgeClass(pStatus)}`;
+      statusBadge.textContent = `${icon} ${pStatus}`;
+      statusCell.appendChild(statusBadge);
+
+      const confCell = document.createElement("td");
+      const confidence = Number(d.confidence);
+      confCell.textContent = Number.isFinite(confidence)
+        ? `${(confidence * 100).toFixed(1)}%`
+        : "--";
+
+      const elevCell = document.createElement("td");
+      elevCell.appendChild(document.createTextNode(
+        `${Number.isFinite(d.elevation_m) ? d.elevation_m : "--"} m `
+      ));
+      const elevProv = document.createElement("span");
+      elevProv.className = "prov-tag prov-derived font-small";
+      elevProv.textContent = "DERIVED";
+      elevCell.appendChild(elevProv);
+
+      const depthCell = document.createElement("td");
+      depthCell.textContent = `${Number.isFinite(d.geo?.depth_m) ? d.geo.depth_m : "--"} m`;
+
+      const trackCell = document.createElement("td");
+      const trackSpan = document.createElement("span");
+      trackSpan.className = "font-small text-muted font-mono";
+      trackSpan.textContent = d.track_id || "TRK-001";
+      trackCell.appendChild(trackSpan);
+
+      [idCell, classCell, statusCell, confCell, elevCell, depthCell, trackCell]
+        .forEach(cell => tr.appendChild(cell));
 
       tr.addEventListener("click", () => {
         selectDetection(d.detection_id);
@@ -1144,10 +1514,18 @@ function renderSpecsTable(detections) {
       tbody.appendChild(tr);
     });
 
-    document.getElementById("download-pdf-btn").removeAttribute("disabled");
+    const downloadBtn = document.getElementById("download-pdf-btn");
+    if (downloadBtn) downloadBtn.removeAttribute("disabled");
   } else {
-    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">No contacts match active filters.</td></tr>`;
-    document.getElementById("download-pdf-btn").setAttribute("disabled", "true");
+    const tr = document.createElement("tr");
+    const td = document.createElement("td");
+    td.colSpan = 7;
+    td.className = "empty-state";
+    td.textContent = "No contacts match active filters.";
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+    const emptyBtn = document.getElementById("download-pdf-btn");
+    if (emptyBtn) emptyBtn.setAttribute("disabled", "true");
   }
 }
 
@@ -1162,7 +1540,7 @@ async function downloadDispatchPdf() {
   const payload = {
     incident_id: "NET-GOM-" + Math.floor(1000 + Math.random() * 9000),
     class: primary.class,
-    confidence: (primary.confidence * 100).toFixed(1),
+    confidence: confidencePct(primary.confidence).replace("%", ""),
     elevation_m: primary.elevation_m,
     depth_m: (primary.geo && primary.geo.depth_m !== undefined) ? primary.geo.depth_m : null,
     lat: (primary.geo && primary.geo.lat !== undefined) ? primary.geo.lat : null,
@@ -1236,23 +1614,41 @@ async function triggerSystem2Analysis(data) {
     });
     if (!res.ok) throw new Error("Analysis failed");
     const s2 = await res.json();
+    if (!s2) throw new Error("Empty analysis payload");
 
-    summaryEl.textContent = s2.incident_summary;
-    actEl.textContent = `${s2.operator_action} [Priority: ${s2.recovery_priority}]`;
-    latEl.textContent = `${s2.latency_ms.toFixed(1)} ms (${s2.status})`;
+    const incidentSummary = s2.incident_summary
+      ? String(s2.incident_summary)
+      : "System 2 returned no incident summary.";
+    const latency = Number(s2.latency_ms);
 
-    uncEl.innerHTML = "";
-    if (s2.uncertainties && s2.uncertainties.length > 0) {
-      s2.uncertainties.forEach(u => {
-        const li = document.createElement("li");
-        li.textContent = u;
-        uncEl.appendChild(li);
-      });
-    } else {
-      uncEl.innerHTML = "<li>No operational uncertainties recorded.</li>";
+    summaryEl.textContent = incidentSummary;
+    if (actEl) {
+      const action = s2.operator_action ? String(s2.operator_action) : "No action proposed";
+      const priority = s2.recovery_priority ? String(s2.recovery_priority) : "UNSET";
+      actEl.textContent = `${action} [Priority: ${priority}]`;
+    }
+    if (latEl) {
+      const latencyText = Number.isFinite(latency) ? `${latency.toFixed(1)} ms` : "--";
+      const status = s2.status ? String(s2.status) : "UNKNOWN";
+      latEl.textContent = `${latencyText} (${status})`;
     }
 
-    addTimelineEvent("SYSTEM2", `System 2 briefing ready: ${s2.incident_summary.slice(0, 60)}...`);
+    if (uncEl) {
+      uncEl.innerHTML = "";
+      if (Array.isArray(s2.uncertainties) && s2.uncertainties.length > 0) {
+        s2.uncertainties.forEach(u => {
+          const li = document.createElement("li");
+          li.textContent = String(u);
+          uncEl.appendChild(li);
+        });
+      } else {
+        const li = document.createElement("li");
+        li.textContent = "No operational uncertainties recorded.";
+        uncEl.appendChild(li);
+      }
+    }
+
+    addTimelineEvent("SYSTEM2", `System 2 briefing ready: ${incidentSummary.slice(0, 60)}...`);
   } catch (err) {
     console.warn("System 2 analyze error:", err);
     summaryEl.textContent = "System 2 local summary unavailable.";
