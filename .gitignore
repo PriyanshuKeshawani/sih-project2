@@ -30,6 +30,7 @@ runs/
 
 # Datasets & Local Training Artifacts
 AI4Shipwrecks/
+test_sonar_strips/
 reports/ai4shipwrecks_test_eval/
 
 # Competitor Research & Analysis Clones
