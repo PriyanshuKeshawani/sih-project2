@@ -9,6 +9,8 @@ class PreprocessConfig:
     enabled: bool = True
     use_clahe: bool = True
     use_bilateral: bool = True
+    use_lee_filter: bool = True
+    lee_filter_size: int = 7
     clahe_clip_limit: float = 2.0
     clahe_grid_size: Tuple[int, int] = (8, 8)
     bilateral_d: int = 5
@@ -20,7 +22,7 @@ class SonarPreprocessor:
     """
     Acoustic image preprocessing pipeline tailored for side-scan sonar (SSS).
     Supports grayscale / single-channel handling, contrast enhancement (CLAHE),
-    and speckle noise attenuation (Bilateral filtering) without destroying acoustic shadows.
+    Lee MMSE adaptive speckle filtering, and bilateral filtering without destroying acoustic shadows.
     """
 
     @staticmethod
@@ -46,6 +48,34 @@ class SonarPreprocessor:
         else:
             raise ValueError(f"Unsupported image dimensions: {img.shape}")
 
+    @staticmethod
+    def apply_lee_filter(img: np.ndarray, size: int = 7) -> np.ndarray:
+        """
+        Lee MMSE (Minimum Mean Square Error) speckle filter for sonar imagery.
+        Attenuates multiplicative acoustic speckle while preserving sharp
+        highlight and acoustic shadow boundaries based on local statistics.
+        """
+        if size % 2 == 0:
+            size += 1
+        img_f = img.astype(np.float64)
+
+        # Local statistics
+        local_mean = cv2.blur(img_f, (size, size))
+        local_sq_mean = cv2.blur(img_f ** 2, (size, size))
+        local_var = np.maximum(local_sq_mean - local_mean ** 2, 0.0)
+
+        # Overall image variance
+        overall_var = float(np.var(img_f))
+        if overall_var <= 1e-6:
+            return img
+
+        # Weighting factor
+        weight = local_var / (local_var + overall_var + 1e-10)
+
+        # Filtered output
+        result = local_mean + weight * (img_f - local_mean)
+        return np.clip(result, 0, 255).astype(img.dtype)
+
     @classmethod
     def preprocess(cls, img: np.ndarray, config: PreprocessConfig = None) -> np.ndarray:
         """
@@ -59,7 +89,11 @@ class SonarPreprocessor:
 
         processed = img_bgr.copy()
 
-        # Step 1: Optional Bilateral Filtering (Speckle Noise Smoothing with Edge Preservation)
+        # Step 1: Optional Lee MMSE Speckle Filter (Hydrographic Speckle Attenuation)
+        if getattr(config, "use_lee_filter", False):
+            processed = cls.apply_lee_filter(processed, size=getattr(config, "lee_filter_size", 7))
+
+        # Step 2: Optional Bilateral Filtering (Speckle Noise Smoothing with Edge Preservation)
         if config.use_bilateral:
             processed = cv2.bilateralFilter(
                 processed,
@@ -68,7 +102,7 @@ class SonarPreprocessor:
                 sigmaSpace=float(config.bilateral_sigma_space)
             )
 
-        # Step 2: Optional CLAHE (Contrast-Limited Adaptive Histogram Equalization)
+        # Step 3: Optional CLAHE (Contrast-Limited Adaptive Histogram Equalization)
         if config.use_clahe:
             lab = cv2.cvtColor(processed, cv2.COLOR_BGR2LAB)
             l, a, b = cv2.split(lab)

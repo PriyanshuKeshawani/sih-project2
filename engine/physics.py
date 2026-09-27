@@ -427,10 +427,9 @@ class SonarPhysicsEngine:
         Returns estimated elevation or None if altitude is missing in production.
         """
         from engine.config import get_current_config
-        cfg = get_current_config()
-        if altitude is None and not cfg.allow_simulation:
+        if altitude is None:
             return None
-        alt = altitude if altitude is not None else 12.0
+        alt = float(altitude)
 
         # If box is dict
         if isinstance(box, dict):

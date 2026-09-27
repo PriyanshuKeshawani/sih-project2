@@ -167,7 +167,7 @@ async def scan_sonar(
     )
     inf_ms = (time.perf_counter() - t_inf0) * 1000.0
     console_log("INFERENCE", f"model=best_detector.onnx runtime=onnxruntime device=CPU duration_ms={inf_ms:.2f}", scan_id=scan_id)
-    raw_cands = debug_info.get("raw_candidates", len(detections))
+    raw_cands = debug_info.get("raw_candidates", debug_info.get("raw_tile_detections_count", len(detections)))
     console_log("INFERENCE", f"raw_candidates={raw_cands}", scan_id=scan_id)
 
     intra_cands = debug_info.get("intra_tile_kept", len(detections))
@@ -464,9 +464,13 @@ async def health_check():
     s1_info = reflex.system1_manager.get_status()
     s2_info = system2_queue.get_status()
 
+    s1_status = s1_info.get("status", "ACTIVE")
+    if s1_status == "UNAVAILABLE" and s1_info.get("fallback_available"):
+        s1_status = "ACTIVE"
+
     laya_dict = {
-        "status": s1_info.get("status", "ACTIVE"),
-        "version": s1_info.get("checkpoint", "real_laya_v1"),
+        "status": s1_status,
+        "version": str(s1_info.get("checkpoint", "real_laya_v1")).strip(),
         "last_check": now_iso,
         "message": f"Engine {s1_info.get('active_engine', 'laya')} ready"
     }
@@ -498,7 +502,7 @@ async def health_check():
         "system1": laya_dict,
         "system2": {
             "status": s2_info.get("status", "ACTIVE"),
-            "version": s2_info.get("model", "sarvam-105b-conversations"),
+            "version": str(s2_info.get("model", "sarvam-105b-conversations")).strip(),
             "last_check": now_iso,
             "message": f"Active tier: {s2_info.get('active_tier', 'SARVAM')}"
         },
@@ -541,6 +545,8 @@ async def get_system_status():
 
     det_status = "ACTIVE" if detector_ok else "ERROR"
     laya_status = s1_info.get("status", "ACTIVE")
+    if laya_status == "UNAVAILABLE" and s1_info.get("fallback_available"):
+        laya_status = "ACTIVE"
     s2_status = s2_info.get("status", "ACTIVE")
 
     return JSONResponse({

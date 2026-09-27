@@ -40,6 +40,13 @@ class TestPreprocessing(unittest.TestCase):
         self.assertEqual(comp["raw"].shape, (100, 100, 3))
         self.assertEqual(comp["processed"].shape, (100, 100, 3))
 
+    def test_lee_speckle_filter_preserves_dimensions(self):
+        """Verify Lee MMSE filter processes sonar image preserving uint8 and shape."""
+        img = np.random.randint(20, 200, (128, 128, 3), dtype=np.uint8)
+        filtered = SonarPreprocessor.apply_lee_filter(img, size=7)
+        self.assertEqual(filtered.shape, (128, 128, 3))
+        self.assertEqual(filtered.dtype, np.uint8)
+
 
 if __name__ == '__main__':
     unittest.main()

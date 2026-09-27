@@ -43,7 +43,7 @@ class TestSystem2Fallback(unittest.TestCase):
     def test_missing_api_key_activates_fallback(self):
         """Engine with no API key must report not available and route to fallback."""
         import os
-        with patch.dict(os.environ, {"GROQ_API_KEY": "", "GEMINI_API_KEY": ""}):
+        with patch.dict(os.environ, {"GROQ_API_KEY": "", "GEMINI_API_KEY": "", "SARVAM_API_KEY": ""}):
             engine = GroqSystem2Engine(api_key=None)
             self.assertFalse(engine.is_available())
 
@@ -59,7 +59,7 @@ class TestSystem2Fallback(unittest.TestCase):
     def test_api_network_exception_falls_back_without_crashing(self):
         """If Groq raises a network timeout or connection error, engine falls back cleanly."""
         import os
-        with patch.dict(os.environ, {"GEMINI_API_KEY": ""}):
+        with patch.dict(os.environ, {"GROQ_API_KEY": "", "GEMINI_API_KEY": "", "SARVAM_API_KEY": ""}):
             engine = GroqSystem2Engine(api_key="gsk_mock_test_key_12345")
             mock_client = MagicMock()
             mock_client.chat.completions.create.side_effect = TimeoutError("Groq API connection timed out")

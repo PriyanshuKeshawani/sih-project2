@@ -16,6 +16,13 @@ CLASS_COLORS = {
     'mine_cylinder': (255, 0, 255),     # Magenta (Munition/drum hazard)
     'crab_pot': (128, 128, 128)         # Gray (Hard negative)
 }
+DEFAULT_PER_CLASS_CONF = {
+    'submarine_pipeline': 0.25,
+    'shipwreck': 0.30,
+    'mine_cylinder': 0.35,
+    'ghost_net': 0.25,
+    'crab_pot': 0.35
+}
 
 
 class SonarDetector:
@@ -45,6 +52,25 @@ class SonarDetector:
         self.output_name = self.session.get_outputs()[0].name
         self.last_debug_info: Dict[str, Any] = {}
 
+        # Resolve classes dynamically from ONNX metadata or fallback to default
+        model_meta = self.session.get_modelmeta()
+        custom_meta = getattr(model_meta, "custom_metadata_map", {}) or {}
+        names_meta = custom_meta.get("names")
+        if names_meta:
+            try:
+                import ast
+                parsed_names = ast.literal_eval(names_meta)
+                if isinstance(parsed_names, dict):
+                    self.classes = [parsed_names[i] for i in sorted(parsed_names.keys())]
+                elif isinstance(parsed_names, list):
+                    self.classes = list(parsed_names)
+                else:
+                    self.classes = list(CLASSES)
+            except Exception:
+                self.classes = list(CLASSES)
+        else:
+            self.classes = list(CLASSES)
+
     def _infer_tile_raw(self, tile_img_bgr: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Runs a single 640x640 tile through the ONNX session.
@@ -59,16 +85,28 @@ class SonarDetector:
         tensor = np.expand_dims(tensor, axis=0)
 
         outputs = self.session.run([self.output_name], {self.input_name: tensor})[0]
-        preds = np.transpose(outputs[0])  # Shape: (8400, 9)
+        preds = np.transpose(outputs[0])  # Shape: (8400, 4 + num_classes)
+
+        num_classes = len(self.classes)
+        expected_cols = 4 + num_classes
+        if preds.shape[1] < expected_cols:
+            raise ValueError(
+                f"ONNX model output width ({preds.shape[1]}) incompatible with classes ({num_classes}). "
+                f"Expected at least {expected_cols} columns."
+            )
 
         cx = preds[:, 0]
         cy = preds[:, 1]
         w = preds[:, 2]
         h = preds[:, 3]
-        class_scores = preds[:, 4:]  # 5 classes
+        class_scores = preds[:, 4:expected_cols]
 
-        max_scores = np.max(class_scores, axis=1)
-        max_classes = np.argmax(class_scores, axis=1)
+        if num_classes == 1:
+            max_scores = class_scores[:, 0]
+            max_classes = np.zeros(len(max_scores), dtype=int)
+        else:
+            max_scores = np.max(class_scores, axis=1)
+            max_classes = np.argmax(class_scores, axis=1)
 
         x1 = cx - w / 2.0
         y1 = cy - h / 2.0
@@ -89,11 +127,12 @@ class SonarDetector:
         overlap: float = 0.20,
         preprocess_config: Optional[PreprocessConfig] = None,
         draw_tiles: bool = False,
-        return_debug: bool = False
+        return_debug: bool = False,
+        per_class_conf: Optional[Dict[str, float]] = None
     ) -> Any:
         """
         End-to-end detection pipeline:
-        1. Preprocessing (optional CLAHE & bilateral filtering).
+        1. Preprocessing (optional CLAHE, Lee MMSE, & bilateral filtering).
         2. Large-image tiling into overlapping 640x640 windows.
         3. ONNX inference per tile.
         4. Tile-level class-aware NMS.
@@ -103,6 +142,12 @@ class SonarDetector:
         """
         if img is None or img.size == 0:
             raise ValueError("Input image is empty or invalid.")
+
+        def _get_threshold(cl_id: int) -> float:
+            if per_class_conf is not None:
+                c_name = self.classes[cl_id] if cl_id < len(self.classes) else "unknown"
+                return float(per_class_conf.get(c_name, conf_threshold))
+            return float(conf_threshold)
 
         orig_bgr = SonarPreprocessor.ensure_3channel_bgr(img)
         orig_h, orig_w = orig_bgr.shape[:2]
@@ -138,7 +183,10 @@ class SonarDetector:
         # Full-frame direct pass (captures large panoramic targets like full shipwrecks & pipelines)
         direct_resized = cv2.resize(orig_bgr, (tile_size, tile_size))
         b_dir, s_dir, c_dir = self._infer_tile_raw(direct_resized)
-        valid_dir = s_dir >= conf_threshold
+        if per_class_conf is not None:
+            valid_dir = np.array([sc >= _get_threshold(cl) for sc, cl in zip(s_dir, c_dir)])
+        else:
+            valid_dir = s_dir >= conf_threshold
         scale_x = orig_w / float(tile_size)
         scale_y = orig_h / float(tile_size)
         for bx, sc, cl in zip(b_dir[valid_dir], s_dir[valid_dir], c_dir[valid_dir]):
@@ -167,7 +215,10 @@ class SonarDetector:
             boxes_xyxy, scores, class_ids = self._infer_tile_raw(tile.image)
 
             # Confidence filtering
-            valid_mask = scores >= conf_threshold
+            if per_class_conf is not None:
+                valid_mask = np.array([sc >= _get_threshold(cl) for sc, cl in zip(scores, class_ids)])
+            else:
+                valid_mask = scores >= conf_threshold
             t_boxes = boxes_xyxy[valid_mask]
             t_scores = scores[valid_mask]
             t_classes = class_ids[valid_mask]
@@ -255,12 +306,20 @@ class SonarDetector:
             for g_idx in global_keep_idx:
                 gx1, gy1, gx2, gy2 = all_global_boxes[g_idx]
                 cls_id = all_class_ids[g_idx]
-                cls_name = CLASSES[cls_id]
+                cls_name = self.classes[cls_id] if cls_id < len(self.classes) else "unknown_anomaly"
                 score = all_scores[g_idx]
                 tile_source = all_tile_ids[g_idx]
 
-                # Hard negative filter for weak crab_pot
-                if cls_name == 'crab_pot' and score < 0.40:
+                # Class-specific confidence filtering (suppresses false positives on seabed geology)
+                min_class_thresh = {
+                    'crab_pot': 0.40,
+                    'shipwreck': 0.38,
+                    'ghost_net': 0.35,
+                    'mine_cylinder': 0.35,
+                    'submarine_pipeline': 0.35
+                }.get(cls_name, conf_threshold)
+
+                if score < min_class_thresh:
                     continue
 
                 bw = gx2 - gx1
@@ -304,6 +363,7 @@ class SonarDetector:
 
         self.last_debug_info = {
             "tile_count": len(tiles) if tiling else 1,
+            "raw_candidates": raw_tile_detections_count,
             "raw_tile_detections_count": raw_tile_detections_count,
             "raw_tile_detection_count": raw_tile_detections_count,
             "post_tile_nms_count": len(all_global_boxes),

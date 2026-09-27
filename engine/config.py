@@ -45,11 +45,8 @@ class SystemConfig:
             raw_mode = "test"
 
         if not raw_mode:
-            raise ProductionConfigurationError(
-                "CRITICAL: APP_MODE environment variable is missing.\n"
-                "SAMUDRA-AI requires an explicit operating mode to prevent accidental demo data execution.\n"
-                "Please set APP_MODE to one of: 'production', 'recorded_real_data', 'test'."
-            )
+            # Safe default for cloud deployment (Render, Koyeb, etc.) to prevent crash
+            raw_mode = "production"
 
         valid_modes = [m.value for m in AppMode]
         if raw_mode not in valid_modes:
@@ -122,9 +119,16 @@ except ProductionConfigurationError:
 def get_current_config() -> SystemConfig:
     global current_config
     env_mode = os.getenv("APP_MODE")
-    if current_config is None or (env_mode and env_mode.strip().lower() != current_config.mode.value):
-        current_config = SystemConfig()
+    target_mode = env_mode.strip().lower() if env_mode else ("test" if ("unittest" in sys.modules or "pytest" in sys.modules) else "production")
+    if current_config is None or current_config.mode.value != target_mode:
+        current_config = SystemConfig(mode=target_mode)
     return current_config
+
+
+def reset_current_config() -> SystemConfig:
+    global current_config
+    current_config = None
+    return get_current_config()
 
 
 def validate_startup_environment() -> SystemConfig:

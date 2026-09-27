@@ -6,7 +6,7 @@ Verifies that System 1 execution is NEVER blocked by System 2 processing.
 
 import unittest
 import time
-from engine.system2 import System2Queue, System2MissionContext, TacticalAnalysis
+from engine.system2 import System2Queue, System2MissionContext, TacticalAnalysis, GroqSystem2Engine
 from engine.reflex import System1ReflexEngine
 
 class TestSystem2Queue(unittest.TestCase):
@@ -16,7 +16,8 @@ class TestSystem2Queue(unittest.TestCase):
     """
 
     def setUp(self):
-        self.queue = System2Queue(max_capacity=20)
+        fallback_engine = GroqSystem2Engine(api_key=None)
+        self.queue = System2Queue(engine=fallback_engine, max_capacity=20)
         self.sample_context = System2MissionContext(
             survey_id="SURVEY_QUEUE_01",
             contacts=[{"class": "mine_cylinder", "confidence": 0.82, "elevation_m": 0.5}],

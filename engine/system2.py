@@ -32,7 +32,7 @@ if not logger.handlers:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] [SYSTEM2] %(message)s")
 
 # Sarvam AI model configuration
-DEFAULT_SARVAM_MODEL = os.getenv("SARVAM_MODEL", "sarvam-105b-conversations")
+DEFAULT_SARVAM_MODEL = os.getenv("SARVAM_MODEL", "sarvam-105b-conversations").strip()
 DEFAULT_GROQ_MODEL = DEFAULT_SARVAM_MODEL  # Backwards compatibility alias
 
 
@@ -376,6 +376,9 @@ class DeterministicSystem2Fallback:
 # 4. Sarvam AI Tactical Reasoning Engine
 # =====================================================================
 
+_DEFAULT_KEY = object()
+
+
 class SarvamSystem2Engine:
     """
     Connects directly to the official Sarvam AI Chat Completions API (sarvam-105b)
@@ -384,12 +387,16 @@ class SarvamSystem2Engine:
     automatic local deterministic fallback.
     """
 
-    def __init__(self, api_key: Optional[str] = None, model: str = DEFAULT_SARVAM_MODEL, timeout_s: float = 20.0):
-        self.api_key = api_key or os.getenv("SARVAM_API_KEY", "sk_zpnjwu68_ssJAMmMBUujApToeH0zVPZb9")
-        self.model = model or os.getenv("SARVAM_MODEL", "sarvam-105b")
+    def __init__(self, api_key: Any = _DEFAULT_KEY, model: str = DEFAULT_SARVAM_MODEL, timeout_s: float = 20.0):
+        if api_key is _DEFAULT_KEY:
+            self.api_key = os.getenv("SARVAM_API_KEY", "").strip()
+        else:
+            self.api_key = api_key.strip() if isinstance(api_key, str) else ""
+        self.model = (model or os.getenv("SARVAM_MODEL", "sarvam-105b")).strip()
         self.api_url = "https://api.sarvam.ai/v1/chat/completions"
         self.timeout_s = timeout_s
         self.sarvam_status = "ACTIVE" if bool(self.api_key) else "UNAVAILABLE"
+        self.client = None
 
         # Backwards compatibility attributes
         self.groq_status = self.sarvam_status
@@ -405,7 +412,15 @@ class SarvamSystem2Engine:
         return bool(self.api_key) and self.sarvam_status != "UNAVAILABLE"
 
     def _call_sarvam_chat(self, messages: List[Dict[str, str]], temperature: float = 0.1) -> str:
-        """Executes HTTP POST request to Sarvam AI Chat Completions endpoint."""
+        """Executes HTTP POST request to Sarvam AI Chat Completions endpoint (or mock client if attached)."""
+        if getattr(self, "client", None) is not None:
+            resp = self.client.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                temperature=temperature
+            )
+            choice = resp.choices[0]
+            return choice.message.content
         import urllib.request
         import urllib.error
         payload = {

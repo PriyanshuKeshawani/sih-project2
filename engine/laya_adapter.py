@@ -213,7 +213,17 @@ class System1SafetyGuardrails:
                 guardrail_triggered = True
                 reasons.append(f"SAFETY GUARDRAIL OVERRIDE: {state.contact_class} escalated to LOITER_AND_RESCAN for secondary sensor verification.")
 
-        # 3. Mandatory operator review for critical decisions
+        # 3. Open-Set Geological Anomaly Guardrail:
+        # Natural rock bed / seafloor geology can trigger closed-set false positives (e.g. NOAA seabed).
+        # Unless corroborated by physical acoustic shadow elevation, prevent hazardous emergency evasion maneuvers.
+        if decision.decision_primitive == "EMERGENCY_PROP_HAZARD" and not state.shadow_detected and state.elevation_m is None:
+            decision.decision_primitive = "LOITER_AND_RESCAN"
+            decision.hazard_score = min(decision.hazard_score, 6.0)
+            decision.needs_operator_review = True
+            guardrail_triggered = True
+            reasons.append("SAFETY GUARDRAIL OVERRIDE: Unverified physical shadow/elevation on seabed anomaly; bounded to LOITER_AND_RESCAN to prevent false collision evasion on seafloor geology.")
+
+        # 4. Mandatory operator review for critical decisions
         if decision.decision_primitive == "EMERGENCY_PROP_HAZARD" and not decision.needs_operator_review:
             decision.needs_operator_review = True
             guardrail_triggered = True
