@@ -147,21 +147,110 @@ function initMap() {
 
 let currentZoom = 1.0;
 
+function getBaseFitDimensions() {
+  const displayArea = document.getElementById("sonar-display-area");
+  const img = document.getElementById("annotated-image");
+  if (!img || !img.naturalWidth || !img.naturalHeight) {
+    return { width: 360, height: 500 };
+  }
+  const areaW = displayArea ? displayArea.clientWidth : 650;
+  const areaH = displayArea ? displayArea.clientHeight : 560;
+  // Reserve 32px for padding so full image is visible
+  const availW = Math.max(areaW - 32, 200);
+  const availH = Math.max(areaH - 32, 280);
+  const scale = Math.min(availW / img.naturalWidth, availH / img.naturalHeight);
+  return {
+    width: Math.max(Math.round(img.naturalWidth * scale), 100),
+    height: Math.max(Math.round(img.naturalHeight * scale), 100)
+  };
+}
+
 function applyZoom(delta) {
   if (delta === 0) {
     currentZoom = 1.0;
   } else {
-    currentZoom = Math.min(Math.max(currentZoom + delta, 0.6), 2.5);
+    currentZoom = Math.min(Math.max(Number((currentZoom + delta).toFixed(2)), 0.5), 3.0);
   }
+
+  const zoomBadge = document.getElementById("zoom-level-badge");
+  if (zoomBadge) {
+    zoomBadge.textContent = currentZoom === 1.0 ? "100% (FIT)" : `${Math.round(currentZoom * 100)}%`;
+  }
+
   const imgElem = document.getElementById("annotated-image");
-  if (imgElem) {
-    imgElem.style.transform = currentZoom === 1.0 ? "none" : `scale(${currentZoom})`;
-    imgElem.style.transformOrigin = "top center";
-    setTimeout(() => {
-      updateOverlayContainerGeometry();
-      renderInteractiveOverlays();
-    }, 50);
+  const displayArea = document.getElementById("sonar-display-area");
+  if (imgElem && imgElem.naturalWidth && imgElem.naturalHeight) {
+    const base = getBaseFitDimensions();
+    const targetW = Math.round(base.width * currentZoom);
+    const targetH = Math.round(base.height * currentZoom);
+
+    imgElem.style.maxWidth = "none";
+    imgElem.style.maxHeight = "none";
+    imgElem.style.width = `${targetW}px`;
+    imgElem.style.height = `${targetH}px`;
+    imgElem.style.transform = "none";
+
+    if (displayArea) {
+      if (currentZoom > 1.0) {
+        displayArea.classList.add("is-zoomable");
+      } else {
+        displayArea.classList.remove("is-zoomable");
+        displayArea.scrollLeft = 0;
+        displayArea.scrollTop = 0;
+      }
+    }
+
+    updateOverlayContainerGeometry();
   }
+}
+
+function setupViewportInteractions() {
+  const displayArea = document.getElementById("sonar-display-area");
+  if (!displayArea) return;
+
+  // Zoom via Ctrl + Wheel (or trackpad pinch-zoom)
+  displayArea.addEventListener("wheel", (e) => {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      const delta = e.deltaY < 0 ? 0.2 : -0.2;
+      applyZoom(delta);
+    }
+  }, { passive: false });
+
+  // Pan via click and drag when zoomed
+  let isPanning = false;
+  let startX = 0;
+  let startY = 0;
+  let scrollLeft = 0;
+  let scrollTop = 0;
+
+  displayArea.addEventListener("mousedown", (e) => {
+    if (e.button !== 0 || e.target.closest(".overlay-bbox")) return;
+    if (displayArea.scrollWidth > displayArea.clientWidth || displayArea.scrollHeight > displayArea.clientHeight) {
+      isPanning = true;
+      displayArea.classList.add("is-panning");
+      startX = e.pageX - displayArea.offsetLeft;
+      startY = e.pageY - displayArea.offsetTop;
+      scrollLeft = displayArea.scrollLeft;
+      scrollTop = displayArea.scrollTop;
+    }
+  });
+
+  window.addEventListener("mousemove", (e) => {
+    if (!isPanning) return;
+    e.preventDefault();
+    const x = e.pageX - displayArea.offsetLeft;
+    const y = e.pageY - displayArea.offsetTop;
+    displayArea.scrollLeft = scrollLeft - (x - startX);
+    displayArea.scrollTop = scrollTop - (y - startY);
+  });
+
+  window.addEventListener("mouseup", () => {
+    if (isPanning) {
+      isPanning = false;
+      displayArea.classList.remove("is-panning");
+    }
+  });
 }
 
 function setupTabNavigation() {
@@ -438,6 +527,9 @@ function setupEventListeners() {
   const btnZoomReset = document.getElementById("btn-zoom-reset");
   if (btnZoomReset) btnZoomReset.addEventListener("click", () => applyZoom(0));
 
+  // Sonar display area: Ctrl+Wheel Zoom and Click-Drag Pan
+  setupViewportInteractions();
+
   // Structured Export handlers (PDF, JSON, CSV)
   setupExportHandlers();
 }
@@ -613,12 +705,12 @@ function renderResults(data) {
   placeholder.style.display = "none";
 
   imgElem.onload = () => {
-    updateOverlayContainerGeometry();
+    applyZoom(0);
     renderInteractiveOverlays();
   };
   // Fallback if cached
-  if (imgElem.complete) {
-    updateOverlayContainerGeometry();
+  if (imgElem.complete && imgElem.naturalWidth) {
+    applyZoom(0);
     renderInteractiveOverlays();
   }
 
@@ -787,7 +879,11 @@ function updateOverlayContainerGeometry() {
 
 // Window resize listener to keep overlay in sync with responsive image layout
 window.addEventListener("resize", () => {
-  updateOverlayContainerGeometry();
+  if (currentZoom === 1.0) {
+    applyZoom(0);
+  } else {
+    updateOverlayContainerGeometry();
+  }
   renderInteractiveOverlays();
 });
 
@@ -815,6 +911,7 @@ function renderInteractiveOverlays() {
     const heightPct = (box.h / img.naturalHeight) * 100;
 
     const bboxDiv = document.createElement("div");
+    bboxDiv.dataset.id = d.detection_id;
     const isCritical = d.class === 'ghost_net' || d.class === 'mine_cylinder';
     bboxDiv.className = `overlay-bbox ${isCritical ? 'bbox-critical' : 'bbox-warning'}`;
     if (d.detection_id === selectedDetectionId) {
@@ -1192,7 +1289,13 @@ async function handleToggleTrackVisibility() {
 
 function highlightActiveElements(detId) {
   // Update overlay boxes
-  document.querySelectorAll(".overlay-bbox").forEach(el => el.classList.remove("selected"));
+  document.querySelectorAll(".overlay-bbox").forEach(el => {
+    if (el.dataset.id === detId) {
+      el.classList.add("selected");
+    } else {
+      el.classList.remove("selected");
+    }
+  });
   // Update specs table rows
   document.querySelectorAll("#specs-tbody tr").forEach(row => {
     if (row.dataset.id === detId) {
