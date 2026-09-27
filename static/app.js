@@ -600,8 +600,92 @@ async function pollServerLogs() {
 }
 
 // =====================================================================
-// 4. Acoustic Scan Pipeline Execution
+// 4. Acoustic Scan Pipeline Execution & Active Sonar Processing HUD
 // =====================================================================
+
+let scanProgressInterval = null;
+
+function showProcessingState(startTime) {
+  const scanBtn = document.getElementById("scan-btn");
+  if (scanBtn) {
+    scanBtn.disabled = true;
+    scanBtn.classList.add("is-processing");
+    const spinner = scanBtn.querySelector(".btn-scan-spinner");
+    if (spinner) spinner.style.display = "inline-block";
+    const icon = scanBtn.querySelector(".btn-scan-icon");
+    if (icon) icon.style.display = "none";
+    const text = scanBtn.querySelector(".btn-scan-text");
+    if (text) text.textContent = "PROCESSING SWATH...";
+  }
+
+  const laser = document.getElementById("sonar-beam-laser");
+  if (laser) {
+    laser.style.display = "block";
+  }
+
+  const hud = document.getElementById("sonar-processing-hud");
+  const stageEl = document.getElementById("sonar-hud-stage");
+  const progressFill = document.getElementById("sonar-hud-progress-fill");
+  const timerEl = document.getElementById("sonar-hud-timer");
+
+  if (hud) {
+    hud.style.display = "flex";
+  }
+
+  const stages = [
+    { atMs: 0, text: "Stage 1: Contrast Normalization (CLAHE) & Speckle Filtering", pct: 15 },
+    { atMs: 280, text: "Stage 2: 640×640 Multi-Tile Sliding Window Swath Slicing", pct: 38 },
+    { atMs: 700, text: "Stage 3: Deep Neural Target Feature Extraction (ONNX Runtime)", pct: 68 },
+    { atMs: 1300, text: "Stage 4: Acoustic Shadow Trigonometry & Seabed Elevation", pct: 86 },
+    { atMs: 1900, text: "Stage 5: System 1 Edge Reflex Arbitration (Laya Reflex)", pct: 95 }
+  ];
+
+  if (scanProgressInterval) clearInterval(scanProgressInterval);
+
+  scanProgressInterval = setInterval(() => {
+    const elapsed = performance.now() - startTime;
+    if (timerEl) {
+      timerEl.textContent = `ELAPSED: ${(elapsed / 1000).toFixed(1)}s`;
+    }
+    let currentStage = stages[0];
+    for (const s of stages) {
+      if (elapsed >= s.atMs) currentStage = s;
+    }
+    if (stageEl) stageEl.textContent = currentStage.text;
+    if (progressFill) progressFill.style.width = `${currentStage.pct}%`;
+  }, 50);
+}
+
+function hideProcessingState() {
+  if (scanProgressInterval) {
+    clearInterval(scanProgressInterval);
+    scanProgressInterval = null;
+  }
+
+  const stageEl = document.getElementById("sonar-hud-stage");
+  const progressFill = document.getElementById("sonar-hud-progress-fill");
+  if (stageEl) stageEl.textContent = "Acoustic Scan Complete • Observations Verified";
+  if (progressFill) progressFill.style.width = "100%";
+
+  setTimeout(() => {
+    const hud = document.getElementById("sonar-processing-hud");
+    if (hud) hud.style.display = "none";
+    const laser = document.getElementById("sonar-beam-laser");
+    if (laser) laser.style.display = "none";
+
+    const scanBtn = document.getElementById("scan-btn");
+    if (scanBtn) {
+      scanBtn.disabled = false;
+      scanBtn.classList.remove("is-processing");
+      const spinner = scanBtn.querySelector(".btn-scan-spinner");
+      if (spinner) spinner.style.display = "none";
+      const icon = scanBtn.querySelector(".btn-scan-icon");
+      if (icon) icon.style.display = "inline-block";
+      const text = scanBtn.querySelector(".btn-scan-text");
+      if (text) text.textContent = "RUN ANALYSIS";
+    }
+  }, 220);
+}
 
 async function triggerScan() {
   const timer = document.getElementById("scan-timer");
@@ -630,15 +714,7 @@ async function triggerScan() {
   }
 
   const startTime = performance.now();
-
-  // NOTE: element id is "scan-btn" in index.html.
-  const scanBtn = document.getElementById("scan-btn");
-  const setScanBusy = (busy) => {
-    if (!scanBtn) return;
-    scanBtn.disabled = busy;
-    scanBtn.setAttribute("aria-busy", busy ? "true" : "false");
-  };
-  setScanBusy(true);
+  showProcessingState(startTime);
 
   try {
     const res = await fetch("/api/scan", {
@@ -667,7 +743,7 @@ async function triggerScan() {
     timer.textContent = "SCAN ERROR";
     timer.style.color = cssVar("--red-neon", "#ff3b5c");
   } finally {
-    setScanBusy(false);
+    hideProcessingState();
   }
 }
 

@@ -124,10 +124,11 @@
       <!-- Run Analysis Primary Action -->
       <div class="toolbar-item run-item">
         <button id="scan-btn" class="primary-scan-btn" aria-label="Run Sonar Analysis">
-          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+          <svg class="btn-scan-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
             <polygon points="5 3 19 12 5 21 5 3"></polygon>
           </svg>
-          RUN ANALYSIS
+          <span class="btn-scan-spinner" style="display: none;"></span>
+          <span class="btn-scan-text">RUN ANALYSIS</span>
         </button>
         <span id="scan-timer" class="status-chip">STANDBY</span>
       </div>
@@ -164,6 +165,8 @@
             <div class="image-wrapper" id="image-wrapper">
               <img id="annotated-image" src="" alt="Acoustic Sonar Feed" style="display:none;" />
               <div id="interactive-overlay-container" class="interactive-overlay-container"></div>
+              <!-- Active Sonar Laser Sweep Beam -->
+              <div id="sonar-beam-laser" class="sonar-beam-laser" style="display: none;"></div>
               <div id="sonar-placeholder" class="sonar-placeholder">
                 <div class="placeholder-icon" aria-hidden="true">
                   <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
@@ -172,6 +175,34 @@
                 </div>
                 <p class="placeholder-title">NO SONAR STRIP LOADED</p>
                 <p class="placeholder-sub">Select a survey sample above or upload a raw side-scan sonar strip to begin acoustic analysis.</p>
+              </div>
+            </div>
+
+            <!-- Tactical Active Sonar Processing HUD -->
+            <div id="sonar-processing-hud" class="sonar-processing-hud" style="display: none;" role="status" aria-live="polite">
+              <div class="sonar-hud-scanner">
+                <div class="sonar-radar-ring ring-1"></div>
+                <div class="sonar-radar-ring ring-2"></div>
+                <div class="sonar-radar-ring ring-3"></div>
+                <div class="sonar-radar-sweep"></div>
+                <div class="sonar-radar-core"></div>
+              </div>
+              <div class="sonar-hud-content">
+                <div class="sonar-hud-title font-mono">
+                  <span class="hud-pulse-dot"></span>
+                  <span>ACOUSTIC PROCESSING ACTIVE</span>
+                </div>
+                <div class="sonar-hud-stage font-mono" id="sonar-hud-stage">Initializing Acoustic Pipeline...</div>
+                <div class="sonar-hud-progress-bar">
+                  <div class="sonar-hud-progress-fill" id="sonar-hud-progress-fill"></div>
+                </div>
+                <div class="sonar-hud-metrics font-mono">
+                  <span id="sonar-hud-timer">ELAPSED: 0.0s</span>
+                  <span class="hud-sep">&bull;</span>
+                  <span>EDGE NODE CPU</span>
+                  <span class="hud-sep">&bull;</span>
+                  <span>640px TILES</span>
+                </div>
               </div>
             </div>
           </div>
