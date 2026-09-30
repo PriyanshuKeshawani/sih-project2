@@ -1,6 +1,6 @@
 # PHASE 3 RESULTS: ACOUSTIC SHADOW PHYSICS, METADATA & GEOREFERENCING
 
-**System:** SAMUDRA-AI (SIH 2026 Problem Statement 26057)  
+**System:** Ocean IQ (SIH 2026 Problem Statement 26057)  
 **Phase:** 3 — Acoustic Shadow Physics + Metadata + Georeferencing  
 **Status:** COMPLETE & VERIFIED  
 **Date:** 2026-09-26  

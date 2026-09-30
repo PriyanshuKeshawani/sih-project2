@@ -1,6 +1,6 @@
 """
 engine/sources.py
-Real Sonar & Navigation Input Abstraction for SAMUDRA-AI (Production MVP).
+Real Sonar & Navigation Input Abstraction for Ocean IQ (Production MVP).
 Enforces Sections 5, 6, 7, 31 of Production-Grade Hardening.
 
 Architectural Guarantees:

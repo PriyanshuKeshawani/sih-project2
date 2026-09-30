@@ -150,7 +150,7 @@ def generate_timeline_svg(tracks: list, output_path: str):
     svg_lines = [
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" width="{width}" height="{height}" style="background:#0a1929; font-family: monospace;">',
         f'<rect width="{width}" height="{height}" fill="#0a1929"/>',
-        f'<text x="30" y="40" fill="#00f2fe" font-size="18" font-weight="bold">SAMUDRA-AI: TEMPORAL MULTI-PING TRACK PERSISTENCE</text>',
+        f'<text x="30" y="40" fill="#00f2fe" font-size="18" font-weight="bold">Ocean IQ: TEMPORAL MULTI-PING TRACK PERSISTENCE</text>',
         f'<text x="30" y="65" fill="#8899aa" font-size="12">SURVEY_DEMO_2026 — 5 Ping Consecutive Sonar Waterfall Observations</text>',
         # Time axis
         f'<line x1="160" y1="110" x2="820" y2="110" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>',
@@ -212,7 +212,7 @@ def generate_timeline_png(tracks: list, output_path: str):
     img = np.full((500, 1000, 3), (25, 15, 10), dtype=np.uint8)
 
     # Title
-    cv2.putText(img, "SAMUDRA-AI: TEMPORAL MULTI-PING TRACK PERSISTENCE", (30, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (254, 242, 0), 2)
+    cv2.putText(img, "Ocean IQ: TEMPORAL MULTI-PING TRACK PERSISTENCE", (30, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (254, 242, 0), 2)
     cv2.putText(img, "Multi-ping acoustic track association: NEW_CONTACT -> PERSISTENT vs TRANSIENT", (30, 75), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (170, 153, 136), 1)
 
     # Time markers

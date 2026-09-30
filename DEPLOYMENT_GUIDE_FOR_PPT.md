@@ -1,5 +1,5 @@
 # 🚀 DEPLOYMENT GUIDE: GET YOUR LIVE PROJECT URL FOR SIH PPT
-# Project: SAMUDRA-AI (SIH 2026 Problem Statement 26057)
+# Project: Ocean IQ (SIH 2026 Problem Statement 26057)
 
 This project is built using **FastAPI + ONNX Runtime + Modern Navy Web Cockpit (HTML/CSS/JS + Leaflet GIS)**.
 It has NO heavy dependencies, requires NO paid GPU, runs in under ~50MB RAM, and can be deployed for **100% FREE** with a permanent public URL that you can put directly in your SIH PPT!
@@ -18,7 +18,7 @@ Render gives you a clean, permanent public URL like:
      ```bash
      git init
      git add .
-     git commit -m "feat: initial release of SAMUDRA-AI for SIH 26057"
+     git commit -m "feat: initial release of Ocean IQ for SIH 26057"
      git branch -M main
      git remote add origin https://github.com/<YOUR_GITHUB_USERNAME>/samudra-sonar-ai.git
      git push -u origin main

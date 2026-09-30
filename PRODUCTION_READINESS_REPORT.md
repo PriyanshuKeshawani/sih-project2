@@ -1,5 +1,5 @@
 # PRODUCTION READINESS & HARDENING REPORT
-**SAMUDRA-AI: Autonomous Underwater Sonar Intelligence System**  
+**Ocean IQ: Autonomous Underwater Sonar Intelligence System**  
 **SIH 2026 Problem Statement 26057 — MoES / NIOT Chennai**  
 **Quality Gate Determination:** `PRODUCTION_MVP_READY_WITH_LIMITATIONS`  
 **Evaluation Date:** 2026-09-26  
@@ -8,7 +8,7 @@
 
 ## 1. Production Mode Definition
 
-SAMUDRA-AI enforces strict operational mode isolation governed by `engine/config.py`. The environment variable `APP_MODE` dictates whether runtime validation is applied:
+Ocean IQ enforces strict operational mode isolation governed by `engine/config.py`. The environment variable `APP_MODE` dictates whether runtime validation is applied:
 
 | Mode | Allowed Sources | Simulation Permitted | Demo Coordinates Allowed | Telemetry Requirements |
 |---|---|---|---|---|
@@ -22,7 +22,7 @@ SAMUDRA-AI enforces strict operational mode isolation governed by `engine/config
 
 ## 2. Real-Data Policy
 
-SAMUDRA-AI strictly eliminates data fabrication across all operational pipelines:
+Ocean IQ strictly eliminates data fabrication across all operational pipelines:
 1. **Three Legitimate Provenance Categories:**
    - **`REAL` / `MEASURED`**: Data acquired directly from physical or recorded sonar sensors and NMEA receivers (e.g., raw waterfall acoustic pixel intensities, hardware GPS fix).
    - **`DERIVED`**: Mathematically computed from measured inputs using verified physical models (e.g., target elevation derived via acoustic shadow trigonometry: $H = \frac{H_{alt} \cdot L_{shadow}}{R_{slant} + L_{shadow}}$).
@@ -45,7 +45,7 @@ All synthetic, demo, and simulated components have been strictly isolated from t
 
 ## 4. Console Observability
 
-SAMUDRA-AI implements high-density console observability adhering to Section 26–28 requirements. Every request logs standard bracketed domain tags with correlation IDs:
+Ocean IQ implements high-density console observability adhering to Section 26–28 requirements. Every request logs standard bracketed domain tags with correlation IDs:
 
 ```text
 [STARTUP] App initialized in PRODUCTION mode

@@ -22,7 +22,7 @@ from engine.mission_replay import MissionReplayEngine
 
 def run_benchmarks(num_runs_per_scenario: int = 3):
     print("=" * 70)
-    print("SAMUDRA-AI: PHASE 8 END-TO-END MISSION REPLAY & BENCHMARK SUITE")
+    print("Ocean IQ: PHASE 8 END-TO-END MISSION REPLAY & BENCHMARK SUITE")
     print("=" * 70)
     
     engine = MissionReplayEngine()

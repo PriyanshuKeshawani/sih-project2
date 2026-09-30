@@ -1,6 +1,6 @@
 # PHASE 4.5 AUDIT: DATASET INVENTORY, ANNOTATION STATUS & CLASS MAPPING
 
-**System:** SAMUDRA-AI (SIH 2026 Problem Statement 26057)  
+**System:** Ocean IQ (SIH 2026 Problem Statement 26057)  
 **Phase:** 4.5 — Detection Quality Validation Gate  
 **Date:** 2026-09-26  
 **Auditor:** Principal ML Engineer & Marine Robotics Evaluator  

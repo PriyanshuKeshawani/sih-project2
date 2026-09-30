@@ -1,6 +1,6 @@
 """
 engine/config.py
-Production-Grade Configuration & Mode Validation for SAMUDRA-AI.
+Production-Grade Configuration & Mode Validation for Ocean IQ.
 Enforces the Absolute Real-Data Rule (Phase 8.5+ Production Hardening).
 
 Modes:
@@ -33,7 +33,7 @@ class ProductionConfigurationError(Exception):
 
 class SystemConfig:
     """
-    Central validated configuration for SAMUDRA-AI.
+    Central validated configuration for Ocean IQ.
     Guarantees no demo/simulation leaks into the production path.
     """
 

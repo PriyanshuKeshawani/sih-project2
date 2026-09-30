@@ -26,7 +26,7 @@ from engine.scan_cache import scan_cache
 
 
 app = FastAPI(
-    title="SAMUDRA-AI: Autonomous Sonar Debris & Anomaly System",
+    title="Ocean IQ: Autonomous Sonar Debris & Anomaly System",
     description="SIH 2026 Problem Statement 26057 — MoES / NIOT Chennai",
     version="2.0.0"
 )
@@ -64,7 +64,7 @@ async def serve_index():
     if os.path.exists(index_path):
         with open(index_path, "r", encoding="utf-8") as f:
             return f.read()
-    return "<h1>SAMUDRA-AI API Online. Static frontend not yet loaded.</h1>"
+    return "<h1>Ocean IQ API Online. Static frontend not yet loaded.</h1>"
 
 @app.get("/api/samples")
 async def get_samples():

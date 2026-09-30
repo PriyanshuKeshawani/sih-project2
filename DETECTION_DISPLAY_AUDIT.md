@@ -1,5 +1,5 @@
 # DETECTION DISPLAY AUDIT — BACKEND vs FRONTEND
-**Project:** SAMUDRA-AI: Autonomous Underwater Sonar Debris & Anomaly System  
+**Project:** Ocean IQ: Autonomous Underwater Sonar Debris & Anomaly System  
 **Problem Statement:** SIH 2026 Problem Statement 26057 — MoES / NIOT Chennai  
 **Audit Purpose:** Objectively determine whether excessive `SHIPWRECK` boxes displayed on screen are caused by frontend rendering/duplication or backend detection/thresholding.
 

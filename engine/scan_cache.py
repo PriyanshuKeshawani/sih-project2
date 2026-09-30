@@ -1,5 +1,5 @@
 """
-SAMUDRA-AI: High-Performance In-Memory LRU Scan Cache.
+Ocean IQ: High-Performance In-Memory LRU Scan Cache.
 Designed for low-resource environments (0.5 vCPU, 512 MB RAM).
 Caches parsed scan payloads and base64 images to achieve < 5ms response times.
 """

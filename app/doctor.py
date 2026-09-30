@@ -15,7 +15,7 @@ from engine.config import get_current_config
 
 def main():
     print("====================================================")
-    print("SAMUDRA-AI PRODUCTION DOCTOR")
+    print("Ocean IQ PRODUCTION DOCTOR")
     print("====================================================\n")
 
     overall_status = "PASS"

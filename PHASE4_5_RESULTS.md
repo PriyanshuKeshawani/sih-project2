@@ -1,6 +1,6 @@
 # PHASE 4.5 RESULTS: DETECTION QUALITY VALIDATION GATE
 
-**System:** SAMUDRA-AI (SIH 2026 Problem Statement 26057)  
+**System:** Ocean IQ (SIH 2026 Problem Statement 26057)  
 **Phase:** 4.5 — Detection Quality Validation Gate  
 **Status:** COMPLETE & OBJECTIVELY MEASURED  
 **Date:** 2026-09-26  

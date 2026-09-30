@@ -1,6 +1,6 @@
 # DISPLAY AUDIT RESULTS — BACKEND vs FRONTEND
 **SIH 2026 Problem Statement 26057**  
-**Autonomous Underwater Sonar Debris & Anomaly Detection System (SAMUDRA-AI)**
+**Autonomous Underwater Sonar Debris & Anomaly Detection System (Ocean IQ)**
 
 ---
 

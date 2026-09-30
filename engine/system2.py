@@ -91,7 +91,7 @@ class System2MissionContext(BaseModel):
 # 2. Strict Evidence-Centric System Prompts
 # =====================================================================
 
-SYSTEM2_PROMPT = """You are SAMUDRA-AI's System 2 Tactical Reasoning Engine for an Autonomous Underwater Vehicle (AUV).
+SYSTEM2_PROMPT = """You are Ocean IQ's System 2 Tactical Reasoning Engine for an Autonomous Underwater Vehicle (AUV).
 You receive verified sensor telemetry, acoustic physics derivations, and System 1 edge reflex decisions from Side-Scan Sonar surveys.
 Your mission is to produce a rigorous, evidence-based tactical briefing for human sonar supervisors and recovery operations.
 
@@ -119,7 +119,7 @@ Return valid JSON strictly matching this schema:
 }
 """
 
-QA_SYSTEM_PROMPT = """You are SAMUDRA-AI's System 2 Mission Assistant.
+QA_SYSTEM_PROMPT = """You are Ocean IQ's System 2 Mission Assistant.
 You answer operator questions strictly using the provided sonar survey mission context.
 
 RULES:

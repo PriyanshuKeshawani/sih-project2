@@ -173,7 +173,7 @@ def run_replay(source_path: str):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="SAMUDRA-AI Recorded-Real Replay Engine")
+    parser = argparse.ArgumentParser(description="Ocean IQ Recorded-Real Replay Engine")
     parser.add_argument("--source", type=str, default="data/downloaded", help="Directory or file path of real sonar imagery")
     args = parser.parse_args()
 

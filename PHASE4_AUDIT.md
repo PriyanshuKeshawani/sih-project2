@@ -1,6 +1,6 @@
 # PHASE 4 AUDIT: SYSTEM 1 EDGE REFLEX & ALERT ENGINE DEFICIENCIES
 
-**System:** SAMUDRA-AI (SIH 2026 Problem Statement 26057)  
+**System:** Ocean IQ (SIH 2026 Problem Statement 26057)  
 **Audit Target:** `engine/reflex.py` and its callers in `main.py`  
 **Date:** 2026-09-26  
 **Auditor:** Principal ML & Marine Robotics Software Engineer  

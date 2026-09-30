@@ -1,5 +1,5 @@
 /**
- * SAMUDRA-AI: Autonomous Underwater Sonar Intelligence
+ * Ocean IQ: Autonomous Underwater Sonar Intelligence
  * Phase 7: Operator UI & Real-Time Mission Cockpit
  */
 
@@ -293,7 +293,7 @@ function setupExportHandlers() {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentDetections, null, 2));
       const downloadAnchor = document.createElement("a");
       downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `samudra_sonar_detections_${Date.now()}.json`);
+      downloadAnchor.setAttribute("download", `ocean_iq_sonar_detections_${Date.now()}.json`);
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
@@ -323,7 +323,7 @@ function setupExportHandlers() {
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
       link.setAttribute("href", encodedUri);
-      link.setAttribute("download", `samudra_sonar_contacts_${Date.now()}.csv`);
+      link.setAttribute("download", `ocean_iq_sonar_contacts_${Date.now()}.csv`);
       document.body.appendChild(link);
       link.click();
       link.remove();

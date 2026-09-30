@@ -1,5 +1,5 @@
 # PHASE 2 IMPLEMENTATION & BENCHMARK VERIFICATION RESULTS
-**System:** SAMUDRA-AI (SIH 2026 Problem Statement 26057)  
+**System:** Ocean IQ (SIH 2026 Problem Statement 26057)  
 **Verification Date:** 2026-09-26  
 **Auditor/Engineer:** Principal ML & Marine Robotics Software Engineer  
 

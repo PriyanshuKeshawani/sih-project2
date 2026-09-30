@@ -1,5 +1,5 @@
 # PHASE 3 AUDIT: ACOUSTIC PHYSICS & GEOREFERENCING DEFICIENCIES
-**System:** SAMUDRA-AI (SIH 2026 Problem Statement 26057)  
+**System:** Ocean IQ (SIH 2026 Problem Statement 26057)  
 **Audit Target:** `engine/physics.py` and its callers in `main.py` and `test_phase1.py`  
 **Date:** 2026-09-26  
 **Auditor:** Principal ML & Marine Robotics Software Engineer  

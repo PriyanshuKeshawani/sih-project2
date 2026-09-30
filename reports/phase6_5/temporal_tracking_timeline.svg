@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" width="900" height="420" style="background:#0a1929; font-family: monospace;">
 <rect width="900" height="420" fill="#0a1929"/>
-<text x="30" y="40" fill="#00f2fe" font-size="18" font-weight="bold">SAMUDRA-AI: TEMPORAL MULTI-PING TRACK PERSISTENCE</text>
+<text x="30" y="40" fill="#00f2fe" font-size="18" font-weight="bold">Ocean IQ: TEMPORAL MULTI-PING TRACK PERSISTENCE</text>
 <text x="30" y="65" fill="#8899aa" font-size="12">SURVEY_DEMO_2026 — 5 Ping Consecutive Sonar Waterfall Observations</text>
 <line x1="160" y1="110" x2="820" y2="110" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
 <line x1="180" y1="105" x2="180" y2="115" stroke="#00f2fe" stroke-width="2"/>

@@ -1,4 +1,4 @@
-# SAMUDRA-AI: COMPREHENSIVE PROJECT AUDIT (PHASE 1)
+# Ocean IQ: COMPREHENSIVE PROJECT AUDIT (PHASE 1)
 **Project:** SIH 2026 Problem Statement 26057  
 **System:** AI-Powered Automated Underwater Marine Debris and Anomaly Detection System using Side-Scan Sonar Imagery  
 **Sponsoring Body:** Ministry of Earth Sciences (MoES) / National Institute of Ocean Technology (NIOT, Chennai)  

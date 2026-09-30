@@ -1,5 +1,5 @@
 # PHASE 4.6 RESULTS — MODEL CLASS-CONFLICT & UNKNOWN-OBJECT DIAGNOSIS
-**Project:** SAMUDRA-AI: Autonomous Underwater Sonar Debris & Anomaly System  
+**Project:** Ocean IQ: Autonomous Underwater Sonar Debris & Anomaly System  
 **Problem Statement:** SIH 2026 Problem Statement 26057 — MoES / NIOT Chennai  
 **Audit Purpose:** Investigate closed-set classification behavior, class imbalance, and unknown-object assignment on side-scan sonar imagery.
 

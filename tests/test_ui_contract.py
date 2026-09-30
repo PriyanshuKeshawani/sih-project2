@@ -26,10 +26,10 @@ class TestUIContract(unittest.TestCase):
             cls.js_content = f.read()
 
     def test_serve_index_endpoint(self):
-        """Root endpoint '/' serves 200 OK with SAMUDRA-AI HTML."""
+        """Root endpoint '/' serves 200 OK with Ocean IQ HTML."""
         resp = self.client.get("/")
         self.assertEqual(resp.status_code, 200)
-        self.assertIn("SAMUDRA-AI", resp.text)
+        self.assertIn("Ocean IQ", resp.text)
         self.assertIn("v2.0 DUAL-PROCESS", resp.text)
 
     def test_demo_mode_badge_clearly_indicated(self):

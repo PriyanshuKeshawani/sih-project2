@@ -53,3 +53,5 @@ reports/phase8/replays/REPLAY_*.json
 scripts/temp_*.py
 scripts/install_*.py
 extracted_pdf.txt
+*.zip
+video/

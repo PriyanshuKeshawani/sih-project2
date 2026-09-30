@@ -1,6 +1,6 @@
 """
 engine/dataset_loader.py
-Dataset Adapter & Loader for SAMUDRA-AI (SIH 2026 PS 26057).
+Dataset Adapter & Loader for Ocean IQ (SIH 2026 PS 26057).
 
 Manages external and local sonar datasets:
 - DRISHTI SSS (CC-BY-SA-4.0)

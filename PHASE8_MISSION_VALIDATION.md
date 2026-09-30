@@ -1,6 +1,6 @@
 # PHASE 8: END-TO-END MISSION REPLAY, EXTERNAL DATASET TESTING, BENCHMARKING & DEPLOYMENT PACKAGING
 
-**System:** SAMUDRA-AI (SIH 2026 Problem Statement 26057 — MoES / NIOT Chennai)  
+**System:** Ocean IQ (SIH 2026 Problem Statement 26057 — MoES / NIOT Chennai)  
 **Phase:** 8 — Full System Validation, Mission Replay & Deployment Packaging  
 **Quality Gate Status:** `END_TO_END_VALIDATED_WITH_LIMITATIONS`  
 **Date:** 2026-09-26  
@@ -12,7 +12,7 @@
 
 Four public sonar repositories were integrated and formally documented in `dataset_manifest.json`:
 
-| Dataset Name | Upstream Repository / DOI | Origin & Authority | Role in SAMUDRA-AI |
+| Dataset Name | Upstream Repository / DOI | Origin & Authority | Role in Ocean IQ |
 |---|---|---|---|
 | **DRISHTI SSS** | [HuggingFace: rehan9599/drishti-sss](https://huggingface.co/datasets/rehan9599/drishti-sss) | Assembled training/test splits for SIH 2026 PS 26057 | Primary multi-class validation split (ghost net, mine, pipeline, shipwreck, background) |
 | **SubPipe** | [GitHub: remaro-network/SubPipe-dataset](https://github.com/remaro-network/SubPipe-dataset) | OceanScan-MST / REMARO Network (Alvarez-Tuñón et al., 2024) | Subsea pipeline inspection transects and clean negative control backgrounds |

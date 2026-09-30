@@ -25,7 +25,7 @@ def main():
 
     # 2. Print Startup Report Banner
     print("====================================================", flush=True)
-    print("SAMUDRA-AI", flush=True)
+    print("Ocean IQ", flush=True)
     print("PRODUCTION STARTUP", flush=True)
     print("====================================================", flush=True)
     print(f"\nMODE: {config.mode.value}\n", flush=True)

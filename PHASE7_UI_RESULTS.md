@@ -1,7 +1,7 @@
 # PHASE 7 — OPERATOR UI & REAL-TIME MISSION COCKPIT RESULTS
 
 ## 1. Executive Summary
-Phase 7 operationalizes the complete SAMUDRA-AI intelligence stack (tiled ONNX detector, acoustic physics, georeferencing, Laya System 1 reflex engine, Groq/Deterministic System 2 tactical briefing, and multi-ping temporal tracking) into an operator-grade, high-contrast, accessible real-time mission cockpit.
+Phase 7 operationalizes the complete Ocean IQ intelligence stack (tiled ONNX detector, acoustic physics, georeferencing, Laya System 1 reflex engine, Groq/Deterministic System 2 tactical briefing, and multi-ping temporal tracking) into an operator-grade, high-contrast, accessible real-time mission cockpit.
 
 No backend models were retrained, no physics formulas altered, and no ML ground truths fabricated. The UI surfaces transparency, measurement provenance, cautious classification terminology, auditable operator actions, and explicit demo/simulated modes.
 
@@ -32,7 +32,7 @@ No backend models were retrained, no physics formulas altered, and no ML ground 
 
 ```
 +---------------------------------------------------------------------------------------------------+
-| SAMUDRA-AI MISSION COCKPIT [DEMO MODE ACTIVE]                                      SURVEY: RUN_001 |
+| Ocean IQ MISSION COCKPIT [DEMO MODE ACTIVE]                                         SURVEY: RUN_001 |
 +---------------------------------------------------------------------------------------------------+
 | FILTERS: [All] [Persistent] [New] [Transient] [Uncertain] | [Critical] [Warning] | Class Filter    |
 +-------------------------------------------------------+-------------------------------------------+

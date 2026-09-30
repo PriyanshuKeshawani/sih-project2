@@ -1,6 +1,6 @@
 """
 engine/logger.py
-Production-Grade Console Observability & Structured Audit Logger for SAMUDRA-AI.
+Production-Grade Console Observability & Structured Audit Logger for Ocean IQ.
 Enforces Section 8, 9, 10, 11, 27, 28 of Production-Grade Hardening.
 
 Features:

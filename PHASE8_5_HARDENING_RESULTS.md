@@ -9,7 +9,7 @@
 
 ## 1. What Was Already Working
 
-Prior to Phase 8.5, SAMUDRA-AI had established a working baseline across core functional components:
+Prior to Phase 8.5, Ocean IQ had established a working baseline across core functional components:
 - **Aspect-ratio preserving tiled ONNX detection:** 640×640 overlapping tiles (20% overlap) with coordinate translation and class-aware non-maximum suppression (NMS) in [`engine/detector.py`](file:///d:/CODE%20JAANI%20CODE/hackathorns/sih%20ka%20project%202/engine/detector.py).
 - **Acoustic physics and shadow estimation:** Trigonometric altitude and shadow-based obstacle elevation calculations in [`engine/physics.py`](file:///d:/CODE%20JAANI%20CODE/hackathorns/sih%20ka%20project%202/engine/physics.py).
 - **Dual-Engine System 1 Reflex:** Deterministic rule engine (<0.4 ms) and local PyTorch Laya checkpoint (`models/laya/checkpoint/`) with automated fallback in [`engine/reflex.py`](file:///d:/CODE%20JAANI%20CODE/hackathorns/sih%20ka%20project%202/engine/reflex.py) and [`engine/laya_adapter.py`](file:///d:/CODE%20JAANI%20CODE/hackathorns/sih%20ka%20project%202/engine/laya_adapter.py).
